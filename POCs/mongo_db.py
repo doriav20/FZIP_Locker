@@ -9,7 +9,7 @@ collection = db['***collection_name***']
 
 def add_account(email: str, encrpyted_pass: bytes):
     try:
-        collection.insert_one({'email': email, 'password': encrpyted_pass})
+        collection.insert_one({'email': email, 'password': encrpyted_pass, 'files': []})
     except pymongo.errors.DuplicateKeyError:
         print('Duplicate Email Key')
 
@@ -20,6 +20,8 @@ email = "***User's Email Here***"
 password = enc.encrypt_message("***User's Password Here***")
 
 add_account(email, password)
+
+collection.update_one({'email': email}, {'$push': {'files': '***filename***'}})
 
 # result = collection.find({'email': email})
 # result = collection.find()
