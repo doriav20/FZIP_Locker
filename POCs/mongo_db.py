@@ -11,7 +11,7 @@ def add_account(email: str, encrpyted_pass: bytes):
     try:
         collection.insert_one({'email': email, 'password': encrpyted_pass})
     except pymongo.errors.DuplicateKeyError:
-        print("Duplicate Email Key")
+        print('Duplicate Email Key')
 
 
 enc = Encryptor()
