@@ -5,7 +5,7 @@ import os.path
 
 
 class Encryptor:
-    def __init__(self, _key: bytes):
+    def __init__(self, _key: bytes = Random.get_random_bytes(32)):
         self.__key = _key
 
     def pad(self, s: bytes):
