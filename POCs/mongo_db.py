@@ -23,16 +23,17 @@ def deserialization(obj):
     return pickle.loads(obj)
 
 
-enc = Encryptor()
+if __name__ == '__main__':
+    enc = Encryptor()
 
-email = "***User's Email Here***"
-password = enc.encrypt_message("***User's Password Here***")
+    email = "***User's Email Here***"
+    password = enc.encrypt_message("***User's Password Here***")
 
-add_account(email, password)
+    add_account(email, password)
 
-collection.update_one({'email': email}, {'$push': {'files': '***filename***'}})
+    collection.update_one({'email': email}, {'$push': {'files': '***filename***'}})
 
-# result = collection.find({'email': email})
-# result = collection.find()
-# for account in result:
-#     print(account)
+    # result = collection.find({'email': email})
+    # result = collection.find()
+    # for account in result:
+    #     print(account)
