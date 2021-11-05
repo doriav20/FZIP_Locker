@@ -1,6 +1,7 @@
 import pymongo.errors
 from pymongo import MongoClient
 from encryptor import Encryptor
+import pickle
 
 cluster = MongoClient('mongodb://localhost:27017')
 db = cluster['***db_name***']
@@ -12,6 +13,14 @@ def add_account(email: str, encrpyted_pass: bytes):
         collection.insert_one({'email': email, 'password': encrpyted_pass, 'files': []})
     except pymongo.errors.DuplicateKeyError:
         print('Duplicate Email Key')
+
+
+def serialization(obj):
+    return pickle.dumps(obj)
+
+
+def deserialization(obj):
+    return pickle.loads(obj)
 
 
 enc = Encryptor()
