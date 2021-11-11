@@ -27,5 +27,5 @@ def save_model():
 
 if __name__ == '__main__':
     collection.delete_many({})
-    store_model_db('***model_path')
+    store_model_db('***model_path***')
     save_model()
