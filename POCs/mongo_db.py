@@ -8,9 +8,9 @@ db = cluster['***db_name***']
 collection = db['***collection_name***']
 
 
-def add_account(email: str, encrpyted_pass: bytes):
+def add_account(email: str, encrypted_pass: bytes):
     try:
-        collection.insert_one({'email': email, 'password': encrpyted_pass, 'files': []})
+        collection.insert_one({'email': email, 'password': encrypted_pass, 'files': []})
     except pymongo.errors.DuplicateKeyError:
         print('Duplicate Email Key')
 
