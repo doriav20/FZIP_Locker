@@ -1,8 +1,6 @@
 from Crypto import Random
 from Crypto.Cipher import AES
-
-
-# import os
+import os
 
 
 class Encryptor:
@@ -26,23 +24,24 @@ class Encryptor:
         return Encryptor.__encrypt(key, message.encode())
 
     @staticmethod
-    def encrypt_file(key: bytes, file_name: str, remove_extension: bool = False) -> bytes:
-        with open(file_name, 'rb') as file:
+    def encrypt_file(key: bytes, path: str) -> bytes:
+        with open(path, 'rb') as file:
             file_content = file.read()
         return Encryptor.__encrypt(key, file_content)
 
-        # os.remove(file_name)
-        #
-        # if remove_extension:
-        #     index = file_name.rfind('.')
-        #     if index != -1:
-        #         file_name = file_name[:index]
-        #
-        # enc = Encryptor.__encrypt(key, plaintext)
-        #
-        # file = open(file_name + '.lck', 'wb')
-        # file.write(enc)
-        # file.close()
+    @staticmethod
+    def encrypt_and_save_file(key: bytes, path: str, new_extension: str = '') -> None:
+        encrypted_content = Encryptor.encrypt_file(key, path)
+        os.remove(path)
+
+        if new_extension:
+            if (index := path.rfind('.')) != -1 and path[index + 1] not in ['/', '\\']:
+                path = path[:index] + '.' + new_extension
+            else:
+                path = path + '.' + new_extension
+
+        with open(path, 'wb') as file:
+            file.write(encrypted_content)
 
     @staticmethod
     def __decrypt(key: bytes, encrypted_bytes_content: bytes) -> bytes:
@@ -60,13 +59,22 @@ class Encryptor:
         return Encryptor.__decrypt(key, encrypted_message).decode()
 
     @staticmethod
-    def decrypt_file(key: bytes, file_name: str, extension: str = '') -> bytes:
-        with open(file_name, 'rb') as file:
+    def decrypt_file(key: bytes, path: str) -> bytes:
+        with open(path, 'rb') as file:
             file_encrypted_content = file.read()
 
         return Encryptor.__decrypt(key, file_encrypted_content)
 
-        # with open(file_name[:-4] + extension, 'wb'):
-        #     file.write(dec)
-        #
-        # os.remove(file_name)
+    @staticmethod
+    def decrypt_and_save_file(key: bytes, path: str, old_extension: str = '') -> None:
+        decrypted_content = Encryptor.decrypt_file(key, path)
+        os.remove(path)
+
+        if old_extension:
+            if (index := path.rfind('.')) != -1 and path[index + 1] not in ['/', '\\']:
+                path = path[:index] + '.' + old_extension
+            else:
+                path = path + '.' + old_extension
+
+        with open(path, 'wb') as file:
+            file.write(decrypted_content)
