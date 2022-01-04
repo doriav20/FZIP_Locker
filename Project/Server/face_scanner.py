@@ -1,13 +1,12 @@
+from typing import Tuple
+
 import numpy as np
 from cv2 import cv2
-import random
 from db_manager import store_model, get_model
 from Common.details_generator import generate_unique_id
 
-Images = [np.ndarray, np.ndarray, np.ndarray]  # Type alias
 
-
-def create_model(email: str, images: Images) -> bool:
+def create_model(email: str, images: Tuple[np.ndarray, np.ndarray, np.ndarray]) -> bool:
     try:
         x_train = []
         y_labels = []
@@ -42,7 +41,7 @@ def scan_with_model(email: str, image: np.ndarray) -> bool:
 
         conf = 100 - conf
         print(conf)
-        if conf >= 72:
+        if conf >= 65:
             return True
         else:
             return False
