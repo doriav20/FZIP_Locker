@@ -5,6 +5,7 @@ from Common.encryptor import Encryptor
 import pickle
 from datetime import datetime
 
+
 cluster = MongoClient('mongodb://localhost:27017')
 db = cluster['users']
 collection = db['users']
@@ -12,7 +13,7 @@ collection = db['users']
 simple_key = b'1' * 32  # TODO key logic - CLIENT
 
 
-def register(email: str, encrypted_password: bytes) -> bool:
+def register(email: str, encrypted_password: bytes, roi:np.ndarray) -> bool:
     try:
         password = Encryptor.decrypt_message(simple_key, encrypted_password)
 
@@ -75,8 +76,5 @@ def get_model(email: str) -> bytes:
         return None
 
 
-def user_exists(email: str):
+def user_exists(email: str) -> bool:
     return collection.find_one({'email': email}) is not None
-
-
-get_model('aa')
