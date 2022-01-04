@@ -1,5 +1,8 @@
+import pickle
 import socket
 import threading
+
+from Common.operation_result import OperationResult
 from Common.sending_datatypes import SendingDatatype
 from Server.db_manager import user_exists
 
@@ -7,55 +10,60 @@ LOCALHOST = "127.0.0.1"
 PORT = 1234
 
 
-def job(client_socket: socket.socket) -> bool:
+def job(client_socket: socket.socket) -> OperationResult:
     try:
         while True:
             pre_data = client_socket.recv(9).decode()
             if not pre_data:
                 break
-            length, datatype, email = int(pre_data[:8]), SendingDatatype(pre_data[8]), pre_data[9:]
+            length, datatype = int(pre_data[:-1]), SendingDatatype(pre_data[-1])
             obj = client_socket.recv(length)
             if not obj:
                 break
-
+            obj = pickle.loads(obj)
             # 0 - Bad | 1 - OK
             if datatype == SendingDatatype.Registration:
+                email = obj['Email']
+                encrypted_password = obj['Encrypted_Password']
+                roi_3 = pickle.loads(obj['roi_3'])
                 if user_exists(email):
                     client_socket.send(b'0')
                     client_socket.close()
-                    return False
+                    return OperationResult.FAILED
                 client_socket.send(b'1')
 
             elif datatype == SendingDatatype.SignIn:
+                email = obj['Email']
+                encrypted_password = obj['Encrypted_Password']
                 if not user_exists(email):
                     client_socket.send(b'0')
                     client_socket.close()
-                    return False
+                    return OperationResult.FAILED
                 client_socket.send(b'1')
 
             elif datatype == SendingDatatype.StoreFaceImage:
                 if not user_exists(email):
                     client_socket.send(b'0')
                     client_socket.close()
-                    return False
+                    return OperationResult.FAILED
                 client_socket.send(b'1')
 
             elif datatype == SendingDatatype.ScanFaceImage:
                 if not user_exists(email):
                     client_socket.send(b'0')
                     client_socket.close()
-                    return False
+                    return OperationResult.FAILED
                 client_socket.send(b'1')
 
             else:
                 client_socket.send(b'0')
                 client_socket.close()
-                return False
+                return OperationResult.FAILED
 
         client_socket.close()
-        return True
+        return OperationResult.SUCCEEDED
     except:
-        return False
+        return OperationResult.FAILED
 
 
 def start_server_socket() -> None:
