@@ -2,8 +2,8 @@ import smtplib
 from email.mime.text import MIMEText
 import re
 
-USERNAME = 'fziplocker'
-ADDRESS = 'fziplocker@gmail.com'
+USERNAME = 'faceziplocker'
+ADDRESS = 'faceziplocker@gmail.com'
 PASSWORD = ''
 
 SUBJECT = "Welcome to FZIP Locker"
