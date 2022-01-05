@@ -69,6 +69,9 @@ class GUIScreenClass(AbstractBaseClass):
             roi_preview = kwargs['roi_preview']
             scan_number = kwargs['scan_number']
             other_window_type(self.other_window, callback_func, roi_preview, scan_number)
+        elif other_window_type == PasswordScreenClass:
+            include_pwd_generator = kwargs['include_pwd_generator']
+            other_window_type(self.other_window, callback_func, include_pwd_generator)
         else:
             other_window_type(self.other_window, callback_func)
         self.other_window.show()
@@ -699,6 +702,10 @@ class RegisterScreenClass(GUIScreenClass):
         self.this_window.setEnabled(False)
         self.scan_number += 1
         roi_gray, roi_preview = detect_face()
+        if roi_gray is None:
+            self.this_window.setEnabled(True)
+            self.scan_number -= 1
+            return
         roi_gray, roi_preview = roi_gray.copy(), roi_preview.copy()
         self.open_other_window(FaceScanningScreenClass, close_current=False,
                                callback_func=lambda: self.scan_callback_after_scanning(roi_gray),
@@ -898,7 +905,7 @@ class CompressScreenClass(GUIScreenClass):
         self.compressButton.setText(QCoreApplication.translate('CompressWindow', 'Compress', None))
         self.error_text.setText(QCoreApplication.translate('CompressWindow', 'Error Occurred', None))
 
-        self.file_path = ''
+        self.paths = {}
 
         QMetaObject.connectSlotsByName(CompressWindow)
 
@@ -952,10 +959,13 @@ class CompressScreenClass(GUIScreenClass):
             self.change_error_message('Unknown Error Occurred')
             self.add_error_message()
             return
-        self.file_path = path
+        self.paths['decompress_lock_file'] = path
         self.remove_error_message()
         self.this_window.setEnabled(False)
         roi_gray, roi_preview = detect_face()
+        if roi_gray is None:
+            self.this_window.setEnabled(True)
+            return
         roi_gray, roi_preview = roi_gray.copy(), roi_preview.copy()
         self.open_other_window(FaceScanningScreenClass, close_current=False,
                                callback_func=lambda: self.decompress_callback_after_scanning(roi_gray),
@@ -978,20 +988,24 @@ class CompressScreenClass(GUIScreenClass):
         self.this_window.setEnabled(False)
 
         self.open_other_window(PasswordScreenClass, close_current=False,
-                               callback_func=lambda: self.decompress_callback_after_password())
+                               callback_func=lambda: self.decompress_callback_after_password(),
+                               include_pwd_generator=False)
 
     def decompress_callback_after_password(self):
         self.this_window.setEnabled(True)
+        global shared_Compress_Password_zip_pwd
+        if not shared_Compress_Password_zip_pwd:
+            return
 
-        operation_result, non_encrypted_path = external.ext_decompress_handler_decrypt_file(self.file_path)
+        operation_result, non_encrypted_path = \
+            external.ext_decompress_handler_decrypt_file(self.paths['decompress_lock_file'])
 
         if operation_result == OperationResultType.UNKNOWN_ERROR:
             self.change_error_message('Unknown Error Occurred')
             self.add_error_message()
             return
-        global shared_Compress_Password_zip_pwd
-        operation_result = external.ext_decompress_handler_extract_zip(non_encrypted_path,
-                                                                       shared_Compress_Password_zip_pwd)
+        operation_result = external.ext_decompress_handler_extract_zip(
+            non_encrypted_path, shared_Compress_Password_zip_pwd, self.paths['decompress_lock_file'])
         if operation_result == OperationResultType.SUCCEEDED:
             self.remove_error_message()
 
@@ -1004,10 +1018,54 @@ class CompressScreenClass(GUIScreenClass):
             self.add_error_message()
 
     def compress_handler(self) -> None:
-        operation_result = external.ext_compress_handler()
+        self.this_window.setEnabled(False)
+        operation_result, paths = external.ext_compress_handler_select_compress_files()
+        self.this_window.setEnabled(True)
+        if operation_result == OperationResultType.DETAILS_ERROR:  # Cancel when choosing file
+            return
+        if operation_result == OperationResultType.UNKNOWN_ERROR:
+            self.change_error_message('Unknown Error Occurred')
+            self.add_error_message()
+            return
+        self.paths['compress_files'] = paths
+
+        self.this_window.setEnabled(False)
+        operation_result, path = external.ext_compress_handler_save_as_lock_file()
+        self.this_window.setEnabled(True)
+        if operation_result == OperationResultType.DETAILS_ERROR:  # Cancel when choosing file
+            return
+        if operation_result == OperationResultType.UNKNOWN_ERROR:
+            self.change_error_message('Unknown Error Occurred')
+            self.add_error_message()
+            return
+        self.paths['compress_lock_file'] = path
+
+        self.remove_error_message()
+
+        self.this_window.setEnabled(False)
+
+        self.open_other_window(PasswordScreenClass, close_current=False,
+                               callback_func=lambda: self.compress_callback_after_password(),
+                               include_pwd_generator=True)
+
+    def compress_callback_after_password(self):
+        self.this_window.setEnabled(True)
+
+        global shared_Compress_Password_zip_pwd
+        if not shared_Compress_Password_zip_pwd:
+            return
+        operation_result, zip_path = external.ext_compress_handler_archive_zip(
+            self.paths['compress_files'], self.paths['compress_lock_file'], shared_Compress_Password_zip_pwd)
+        if operation_result == OperationResultType.UNKNOWN_ERROR:
+            self.change_error_message('Unknown Error Occurred')
+            self.add_error_message()
+            return
+
+        operation_result = external.ext_compress_handler_encrypt_file(self.paths['compress_lock_file'])
         if operation_result == OperationResultType.SUCCEEDED:
             self.remove_error_message()
-        else:
+        else:  # operation_result == OperationResultType.UNKNOWN_ERROR
+            self.change_error_message('Unknown Error Occurred')
             self.add_error_message()
 
     def add_error_message(self) -> None:
@@ -1030,8 +1088,8 @@ class CompressScreenClass(GUIScreenClass):
 
 
 class FaceScanningScreenClass(GUIScreenClass):
-    def __init__(self, FaceScanningWindow: QMainWindow, callback_func: FunctionType
-                 , img: np.ndarray, scan_number: int) -> None:
+    def __init__(self, FaceScanningWindow: QMainWindow, callback_func: FunctionType,
+                 img: np.ndarray, scan_number: int) -> None:
         super().__init__(FaceScanningWindow, callback_func)
         if not FaceScanningWindow.objectName():
             FaceScanningWindow.setObjectName('FaceScanningWindow')
@@ -1104,6 +1162,10 @@ class FaceScanningScreenClass(GUIScreenClass):
         else:
             title = f'Is This Your Face? - Scan number {scan_number}'
 
+        self.this_window.closeEvent = self.close_event
+
+        self.close_by_X = True
+
         FaceScanningWindow.setCentralWidget(self.central_widget)
 
         FaceScanningWindow.setWindowTitle(QCoreApplication.translate('FaceScanningWindow', 'FZIP Locker', None))
@@ -1147,6 +1209,7 @@ class FaceScanningScreenClass(GUIScreenClass):
         global shared_Compress_FaceScanning_image_valid
         shared_Register_FaceScanning_image_valid = False
         shared_Compress_FaceScanning_image_valid = False
+        self.close_by_X = False
         self.this_window.close()
         if self.callback_func:
             self.callback_func()
@@ -1156,13 +1219,21 @@ class FaceScanningScreenClass(GUIScreenClass):
         global shared_Compress_FaceScanning_image_valid
         shared_Register_FaceScanning_image_valid = True
         shared_Compress_FaceScanning_image_valid = True
+        self.close_by_X = False
         self.this_window.close()
+
+    def close_event(self, event):
+        if self.close_by_X:
+            global shared_Register_FaceScanning_image_valid
+            global shared_Compress_FaceScanning_image_valid
+            shared_Register_FaceScanning_image_valid = False
+            shared_Compress_FaceScanning_image_valid = False
         if self.callback_func:
             self.callback_func()
 
 
 class PasswordScreenClass(GUIScreenClass):
-    def __init__(self, PasswordWindow: QMainWindow, callback_func: FunctionType) -> None:
+    def __init__(self, PasswordWindow: QMainWindow, callback_func: FunctionType, include_pwd_generator: bool) -> None:
         super().__init__(PasswordWindow, callback_func)
         if not PasswordWindow.objectName():
             PasswordWindow.setObjectName('PasswordWindow')
@@ -1237,7 +1308,6 @@ class PasswordScreenClass(GUIScreenClass):
         self.passwordShowButton.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/eye/eye.png);')
-
         self.passwordGeneratorKey = QPushButton(self.central_widget)
         self.passwordGeneratorKey.setObjectName('passwordGeneratorKey')
         self.passwordGeneratorKey.setGeometry(QRect(362, 118, 21, 20))
@@ -1329,6 +1399,13 @@ class PasswordScreenClass(GUIScreenClass):
             'color: rgb(255, 255, 255);'
             'border-radius:10px;')
 
+        if not include_pwd_generator:
+            self.passwordGeneratorKey.hide()
+
+        self.this_window.closeEvent = self.close_event
+
+        self.close_by_X = True
+
         PasswordWindow.setCentralWidget(self.central_widget)
 
         PasswordWindow.setWindowTitle(QCoreApplication.translate('PasswordWindow', 'FZIP Locker', None))
@@ -1412,7 +1489,13 @@ class PasswordScreenClass(GUIScreenClass):
             return
         global shared_Compress_Password_zip_pwd
         shared_Compress_Password_zip_pwd = self.passwordLineEdit.text()
+        self.close_by_X = False
         self.this_window.close()
+
+    def close_event(self, event):
+        if self.close_by_X:
+            global shared_Compress_Password_zip_pwd
+            shared_Compress_Password_zip_pwd = ''
         if self.callback_func:
             self.callback_func()
 
@@ -1426,3 +1509,24 @@ def run_window(WindowClass: type, image=None) -> None:
         WindowClass(MainWindow, None)
     MainWindow.show()
     app.exec_()
+
+
+if __name__ == '__main__':
+    pass
+    print('Login - 1\nRegister - 2\nCompress - 3\nFace Scanning - 4\nPassword - 5')
+    # choice = input()[0]
+    choice = '2'
+    if choice == '1':
+        run_window(LoginScreenClass)
+    elif choice == '2':
+        run_window(RegisterScreenClass)
+    elif choice == '3':
+        run_window(CompressScreenClass)
+    elif choice == '4':
+        import pickle
+
+        g, p = pickle.load(open('./f', 'rb'))
+        temp = p.copy()
+        run_window(FaceScanningScreenClass, p)
+    else:
+        run_window(PasswordScreenClass, True)

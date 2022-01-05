@@ -11,7 +11,7 @@ def detect_face() -> Tuple[np.ndarray, np.ndarray]:
     roi_gray = None
     roi_preview = None
     times = 0
-    while times < 3:
+    while times < 5:
         ret, frame = cap.read()
         frame_h = frame.shape[0]
         frame_w = frame.shape[1]
@@ -27,7 +27,9 @@ def detect_face() -> Tuple[np.ndarray, np.ndarray]:
             times += 1
 
         cv2.imshow('Look at the camera', frame)
-        cv2.waitKey(20)
+        if cv2.waitKey(20) == 27:
+            roi_gray, roi_preview = None, None
+            break
 
     cap.release()
     cv2.destroyAllWindows()

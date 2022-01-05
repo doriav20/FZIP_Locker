@@ -4,6 +4,7 @@ from typing import Tuple
 
 import numpy as np
 
+from Common.details_generator import generate_unique_path
 from Common.encryptor import Encryptor
 from Common.my_key import get_common_key
 from Common.operation_result import OperationResultType
@@ -11,6 +12,7 @@ from client_socket import send_data
 from Common.sending_datatypes import SendingDatatype
 from ZIP_manager import ZIPManager
 import os
+import shutil
 
 KEY = get_common_key()
 ENCRYPTOR = Encryptor(KEY)
@@ -61,17 +63,26 @@ def ext_decompress_handler_face_authentication(roi: np.ndarray) -> OperationResu
     return operation_result
 
 
-def ext_decompress_handler_decrypt_file(path: str) -> Tuple[OperationResultType, str]:
-    path = ENCRYPTOR.decrypt_and_save_file(path, 'zip')
-    return OperationResultType.SUCCEEDED, path
+# Compress Screen
+def ext_decompress_handler_decrypt_file(encrypted_path: str) -> Tuple[OperationResultType, str]:
+    try:
+        path = ENCRYPTOR.decrypt_and_save_file(encrypted_path, 'zip')
+        # if os.path.exists(encrypted_path):
+        #     os.remove(encrypted_path)
+        return OperationResultType.SUCCEEDED, path
+    except:
+        return OperationResultType.UNKNOWN_ERROR, ''
 
 
 # Compress Screen
-def ext_decompress_handler_extract_zip(path: str, password: str) -> OperationResultType:
+def ext_decompress_handler_extract_zip(path: str, password: str, encrypted_path: str) -> OperationResultType:
     operation_result = ZIPManager.decompress(path, password)
     try:
-        if operation_result == OperationResultType.SUCCEEDED:
+        if os.path.exists(path):
             os.remove(path)
+        # if operation_result == OperationResultType.SUCCEEDED:
+        #     if os.path.exists(encrypted_path):
+        #         os.remove(encrypted_path)
         return operation_result
     except:
         return OperationResultType.UNKNOWN_ERROR
@@ -79,8 +90,6 @@ def ext_decompress_handler_extract_zip(path: str, password: str) -> OperationRes
 
 # Compress Screen
 def ext_compress_handler_select_compress_files() -> Tuple[OperationResultType, Tuple[str, ...]]:
-    Tk().withdraw()
-
     try:
         Tk().withdraw()
         paths = filedialog.askopenfilenames(title='Select files to compress',
@@ -92,9 +101,52 @@ def ext_compress_handler_select_compress_files() -> Tuple[OperationResultType, T
             return OperationResultType.DETAILS_ERROR, ('',)
     except:
         return OperationResultType.UNKNOWN_ERROR, ('',)
-    files2 = filedialog.asksaveasfilename(title='Save as compressed file',
-                                          initialdir='',
-                                          defaultextension='.lck',
-                                          filetypes=(('Lock files', '*.lck'), ('All files', '*')),
-                                          confirmoverwrite=True)
-    return OperationResultType.SUCCEEDED
+
+
+# Compress Screen
+def ext_compress_handler_save_as_lock_file() -> Tuple[OperationResultType, str]:
+    try:
+        Tk().withdraw()
+        path = filedialog.asksaveasfilename(title='Select compressed file to decompress',
+                                            initialdir='',
+                                            defaultextension='lck',
+                                            filetypes=(('Lock files', '*.lck'),))
+
+        if path:
+            if not path.endswith('.lck'):
+                path = path.replace(path[path.rfind('.') + 1:], 'lck')
+            return OperationResultType.SUCCEEDED, path
+        else:
+            return OperationResultType.DETAILS_ERROR, ''
+    except:
+        return OperationResultType.UNKNOWN_ERROR, ''
+
+
+# Compress Screen
+def ext_compress_handler_archive_zip(src: Tuple[str, ...], encrypted_path: str, password: str) \
+        -> Tuple[OperationResultType, str]:
+    dest = encrypted_path[:-3] + 'zip'
+    operation_result = ZIPManager.compress(src, dest, password)
+    try:
+        # if operation_result == OperationResultType.SUCCEEDED:
+        #     for path in src:
+        #         if os.path.exists(path):
+        #             if os.path.isdir(path):
+        #                 shutil.rmtree(path)
+        #             else:
+        #                 os.remove(path)
+        return operation_result, dest
+    except:
+        return OperationResultType.UNKNOWN_ERROR, ''
+
+
+# Compress Screen
+def ext_compress_handler_encrypt_file(encrypted_path: str) -> OperationResultType:
+    try:
+        path = encrypted_path[:-3] + 'zip'
+        encrypted_path = ENCRYPTOR.encrypt_and_save_file(path, 'lck')
+        if os.path.exists(path):
+            os.remove(path)
+        return OperationResultType.SUCCEEDED
+    except:
+        return OperationResultType.UNKNOWN_ERROR

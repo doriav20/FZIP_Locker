@@ -34,7 +34,6 @@ class ZIPManager:
                     if '/' in alias:
                         alias = (alias.rstrip('/'))
                         alias = alias[alias.rfind('/') + 1:]
-                    print(alias)
                     zf.write(filepath, arcname=alias, compress_type=zipfile.ZIP_DEFLATED)
         zf.close()
 
@@ -44,19 +43,14 @@ class ZIPManager:
             pyminizip.compress(src, None, dest, pwd, 0)
 
     @staticmethod
-    def compress(src: Tuple[str, ...], dest: str, pwd: str = None, delete_src: bool = False) -> OperationResultType:
+    def compress(src: Tuple[str, ...], dest: str, pwd: str = None) -> OperationResultType:
         filename = ''
         try:
             filename = generate_unique_path('in')
             ZIPManager.__compress_zipfile(src=src, dest=filename)
             ZIPManager.__compress_pyminizip(src=filename, dest=dest, pwd=pwd)
             os.remove(filename)
-            if delete_src:
-                for path in src:
-                    if os.path.isdir(path):
-                        shutil.rmtree(path)
-                    else:
-                        os.remove(path)
+
             return OperationResultType.SUCCEEDED
         except:
             try:
@@ -76,7 +70,7 @@ class ZIPManager:
         pyminizip.uncompress(src, pwd, dest, 0)
 
     @staticmethod
-    def decompress(path: str, pwd: str = None, delete_path: bool = False) -> OperationResultType:
+    def decompress(path: str, pwd: str = None) -> OperationResultType:
         dir_name = ''
         try:
 
@@ -100,9 +94,6 @@ class ZIPManager:
             ZIPManager.__decompress_zipfile(filename, dest)
             rmtree(dir_name)
 
-            if delete_path:
-                os.remove(path)
-
             return OperationResultType.SUCCEEDED
         except Exception as ex:
             try:
@@ -116,3 +107,11 @@ class ZIPManager:
                 pass
 
             return OperationResultType.UNKNOWN_ERROR
+
+
+if __name__ == '__main__':
+    src = (r'C:\Users\Doriav Isakov\Desktop\aaa.txt', r'C:\Users\Doriav Isakov\Desktop\bbb.txt')
+    dest = r'C:\Users\Doriav Isakov\Desktop\mmm.zip'
+    pwd = 'abc123'
+    ZIPManager.compress(src, dest, pwd, delete_src=True)
+    # ZIPManager.decompress(dest, pwd, delete_path=True)
