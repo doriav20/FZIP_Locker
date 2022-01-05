@@ -34,7 +34,6 @@ class Encryptor:
 
     def encrypt_and_save_file(self, path: str, new_extension: str = '') -> str:
         encrypted_content = self.encrypt_file(path)
-        os.remove(path)
 
         if new_extension:
             if (index := path.rfind('.')) != -1 and path[index + 1] not in ['/', '\\']:
@@ -64,7 +63,6 @@ class Encryptor:
 
     def decrypt_and_save_file(self, path: str, old_extension: str = '') -> str:
         decrypted_content = self.decrypt_file(path)
-        os.remove(path)
 
         if old_extension:
             if (index := path.rfind('.')) != -1 and path[index + 1] not in ['/', '\\']:
