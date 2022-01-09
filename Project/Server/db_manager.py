@@ -10,7 +10,7 @@ from Common.operation_result import OperationResultType
 db_password = ''
 
 cluster = MongoClient(f'mongodb+srv://admin:{db_password}@users.b79wk.mongodb.net',
-                      serverSelectionTimeoutMS=5 * 1000)  # Timeout for each finding / updating
+                      serverSelectionTimeoutMS=15 * 1000)  # Timeout for each finding / updating
 db = cluster['users']
 collection = db['users']
 
