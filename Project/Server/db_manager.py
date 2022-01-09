@@ -7,7 +7,9 @@ from datetime import datetime
 
 from Common.operation_result import OperationResultType
 
-cluster = MongoClient('mongodb://localhost:27017',
+db_password = ''
+
+cluster = MongoClient(f'mongodb+srv://admin:{db_password}@users.b79wk.mongodb.net',
                       serverSelectionTimeoutMS=5 * 1000)  # Timeout for each finding / updating
 db = cluster['users']
 collection = db['users']
