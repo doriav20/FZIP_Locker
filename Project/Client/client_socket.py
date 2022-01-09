@@ -32,7 +32,34 @@ def start_client_socket(data: bytes, datatype: SendingDatatype) -> None:
 
 
 def send_data(data: dict, datatype: SendingDatatype) -> OperationResultType:
-    return OperationResultType.SUCCEEDED
-    # encoded_data = pickle.dumps(data)
-    # start_client_socket(encoded_data, datatype)
-    # return OperationResultType.SUCCEEDED
+    from Server import server_external_handlers
+    if datatype == SendingDatatype.SignIn:
+        email = data.get('email')
+        encrypted_password = data.get('encrypted_password')
+        if None in [email, encrypted_password]:  # One of parameters was not provided
+            return OperationResultType.UNKNOWN_ERROR
+        operation_result = server_external_handlers.ext_sign_in_handler(email, encrypted_password)
+        print('Sign in:', operation_result)
+        return operation_result
+
+    elif datatype == SendingDatatype.Registration:
+        email = data.get('email')
+        encrypted_password = data.get('encrypted_password')
+        roi_3 = data.get('roi_3')
+        if None in [email, encrypted_password, roi_3]:  # One of parameters was not provided
+            return OperationResultType.UNKNOWN_ERROR
+        operation_result = server_external_handlers.ext_register_handler(email, encrypted_password, roi_3)
+        print('Sign up:', operation_result)
+        return operation_result
+
+    elif datatype == SendingDatatype.ScanFaceImage:
+        email = data.get('email')
+        roi = data.get('roi')
+        if None in [email, roi]:  # One of parameters was not provided
+            return OperationResultType.UNKNOWN_ERROR
+        operation_result = server_external_handlers.ext_scan_image_handler(email, roi)
+        print('Scan Face:', operation_result)
+        return operation_result
+
+    else:
+        return OperationResultType.UNKNOWN_ERROR
