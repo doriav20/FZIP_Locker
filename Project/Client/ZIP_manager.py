@@ -1,6 +1,4 @@
 import os
-import os
-import shutil
 import zipfile
 from shutil import rmtree
 import glob
