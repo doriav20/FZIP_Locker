@@ -41,13 +41,6 @@ def job(client_socket: socket.socket) -> OperationResult:
                     return OperationResult.FAILED
                 client_socket.send(b'1')
 
-            elif datatype == SendingDatatype.StoreFaceImage:
-                if not user_exists(email):
-                    client_socket.send(b'0')
-                    client_socket.close()
-                    return OperationResult.FAILED
-                client_socket.send(b'1')
-
             elif datatype == SendingDatatype.ScanFaceImage:
                 if not user_exists(email):
                     client_socket.send(b'0')
