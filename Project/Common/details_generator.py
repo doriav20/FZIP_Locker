@@ -1,4 +1,5 @@
 import random
+import re
 
 SYMBOLS = ['!', '@', '#', '$', '*', '+', '-', '.', '_']
 NUMBERS = ['2', '3', '4', '5', '6', '7', '8', '9']
@@ -32,13 +33,18 @@ def generate_password(length: int, include_uppercase: bool = True, include_numbe
     return password
 
 
-def valid_password(passowrd: str) -> bool:
+def is_valid_password(passowrd: str) -> bool:
     if not (6 <= len(passowrd) <= 32):
         return False
     for ch in passowrd:
         if ch not in ALL:
             return False
     return True
+
+
+def is_valid_email(email_address: str) -> bool:
+    result = re.search(r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)', email_address)
+    return result is not None
 
 
 def generate_unique_id(length: int) -> str:
