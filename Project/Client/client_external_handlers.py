@@ -4,39 +4,51 @@ from typing import Tuple
 
 import numpy as np
 
-from Common.details_generator import generate_unique_path
 from Common.encryptor import Encryptor
 from Common.my_key import get_common_key
 from Common.operation_result import OperationResultType
-from client_socket import send_data
+from Client.client_socket import send_data
 from Common.sending_datatypes import SendingDatatype
-from ZIP_manager import ZIPManager
+from Client.ZIP_manager import ZIPManager
 import os
-import shutil
 
 KEY = get_common_key()
 ENCRYPTOR = Encryptor(KEY)
 
-EMAIL = ''
-ENCRYPTED_PASSWORD = b''
+USER_EMAIL = ''
 
 
 # Login Screen - user sign in: authenticate the user in server side
 def ext_sign_in_handler(email: str, password: str) -> OperationResultType:
-    data = {'Email': email,
-            'Encrypted_Password': ENCRYPTOR.encrypt_message(password)}
+    encrypted_password = ENCRYPTOR.encrypt_text(password)
+    data = {'email': email,
+            'encrypted_password': encrypted_password}
     operation_result = send_data(data, SendingDatatype.SignIn)
+    if operation_result == OperationResultType.SUCCEEDED:
+        global USER_EMAIL
+        USER_EMAIL = email
     return operation_result
 
 
 # Register Screen - after three scans user sign up: add user to DB in server side
 def ext_register_handler(email: str, password: str,
                          roi_3: Tuple[np.ndarray, np.ndarray, np.ndarray]) -> OperationResultType:
-    data = {'Email': email,
-            'Encrypted_Password': ENCRYPTOR.encrypt_message(password),
-            'roi_3': pickle.dumps(roi_3)}
+    encrypted_password = ENCRYPTOR.encrypt_text(password)
+    roi_3_serialized = pickle.dumps(roi_3)
+    data = {'email': email,
+            'encrypted_password': encrypted_password,
+            'roi_3': roi_3_serialized}
     operation_result = send_data(data, SendingDatatype.Registration)
+    if operation_result == OperationResultType.SUCCEEDED:
+        global USER_EMAIL
+        USER_EMAIL = email
     return operation_result
+
+
+# Compress Screen
+def ext_logout_handler() -> None:
+    global USER_EMAIL
+    USER_EMAIL = ''
 
 
 # Compress Screen
@@ -56,9 +68,9 @@ def ext_decompress_handler_select_lock_file() -> Tuple[OperationResultType, str]
 
 # Compress Screen
 def ext_decompress_handler_face_authentication(roi: np.ndarray) -> OperationResultType:
-    data = {'Email': EMAIL,
-            'Encrypted_Password': ENCRYPTED_PASSWORD,
-            'roi': pickle.dumps(roi)}
+    roi_serialized = pickle.dumps(roi)
+    data = {'email': USER_EMAIL,
+            'roi': roi_serialized}
     operation_result = send_data(data, SendingDatatype.ScanFaceImage)
     return operation_result
 
@@ -66,7 +78,10 @@ def ext_decompress_handler_face_authentication(roi: np.ndarray) -> OperationResu
 # Compress Screen
 def ext_decompress_handler_decrypt_file(encrypted_path: str) -> Tuple[OperationResultType, str]:
     try:
-        path = ENCRYPTOR.decrypt_and_save_file(encrypted_path, 'zip')
+        path, prefix = ENCRYPTOR.decrypt_and_save_file(encrypted_path, 'zip')
+        if USER_EMAIL != prefix:
+            os.remove(path)
+            return OperationResultType.DETAILS_ERROR, ''
         # if os.path.exists(encrypted_path):
         #     os.remove(encrypted_path)
         return OperationResultType.SUCCEEDED, path
@@ -94,7 +109,6 @@ def ext_compress_handler_select_compress_files() -> Tuple[OperationResultType, T
         Tk().withdraw()
         paths = filedialog.askopenfilenames(title='Select files to compress',
                                             initialdir='')
-        print(paths)
         if paths:
             return OperationResultType.SUCCEEDED, paths
         else:
@@ -144,7 +158,7 @@ def ext_compress_handler_archive_zip(src: Tuple[str, ...], encrypted_path: str, 
 def ext_compress_handler_encrypt_file(encrypted_path: str) -> OperationResultType:
     try:
         path = encrypted_path[:-3] + 'zip'
-        encrypted_path = ENCRYPTOR.encrypt_and_save_file(path, 'lck')
+        encrypted_path = ENCRYPTOR.encrypt_and_save_file(path, 'lck', prefix=USER_EMAIL)
         if os.path.exists(path):
             os.remove(path)
         return OperationResultType.SUCCEEDED
