@@ -11,9 +11,9 @@ import numpy as np
 from enum import Enum
 
 from Client.face_detector import detect_face
-from Common.details_generator import generate_password as _generate_password, valid_password
+from Common.details_generator import generate_password as _generate_password, is_valid_password, is_valid_email
 
-import external_handlers as external
+import client_external_handlers as external
 
 import resources
 from Common.operation_result import OperationResultType
@@ -37,6 +37,11 @@ class ButtonType(Enum):
     NO = 8
     YES = 9
     Submit = 10
+
+
+class Icon(Enum):
+    Green_V = 0
+    Red_X = 1
 
 
 GradientBlue = 'qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,stop:0 rgba(10, 112, 164, 255), stop:0.3125 rgba(10, 112, 164, 255), stop:0.795455 rgba(33, 43, 255, 255), stop:1 rgba(33, 43, 255, 255));'
@@ -160,6 +165,15 @@ class LoginScreenClass(GUIScreenClass):
             'border: 1px solid black;'
             'color: rgb(255, 255, 255);')
 
+        self.passwordShowButton = QPushButton(self.central_widget)
+        self.passwordShowButton.setObjectName('passwordShowButton')
+        self.passwordShowButton.setGeometry(QRect(662, 260, 27, 16))
+        self.passwordShowButton.setCursor(QCursor(Qt.PointingHandCursor))
+        self.passwordShowButton.clicked.connect(self.password_show_handler)
+        self.passwordShowButton.setStyleSheet(
+            'background-image: url();'
+            'border-image: url(:/eye/eye.png);')
+
         self.signInButton = QPushButton(self.central_widget)
         self.signInButton.setObjectName('signInButton')
         self.signInButton.setGeometry(QRect(401, 340, 158, 40))
@@ -194,44 +208,24 @@ class LoginScreenClass(GUIScreenClass):
             'color: rgb(255, 255, 255);'
             'border-radius:10px;')
 
-        self.passwordShowButton = QPushButton(self.central_widget)
-        self.passwordShowButton.setObjectName('passwordShowButton')
-        self.passwordShowButton.setGeometry(QRect(662, 260, 27, 16))
-        self.passwordShowButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.passwordShowButton.clicked.connect(self.password_show_handler)
-        self.passwordShowButton.setStyleSheet(
-            'background-image: url();'
-            'border-image: url(:/eye/eye.png);')
-
-        self.red_x = QLabel(self.central_widget)
-        self.red_x.setObjectName('red_x')
-        self.red_x.setGeometry(QRect(245, 445, 41, 41))
-        self.red_x.setStyleSheet(
+        self.red_x_label = QLabel(self.central_widget)
+        self.red_x_label.setObjectName('red_x_label')
+        self.red_x_label.setGeometry(QRect(460, 480, 40, 40))
+        self.red_x_label.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/red_x/red_x.png);')
-        self.red_x.hide()
+        self.red_x_label.hide()
 
-        self.details_error_text = QLabel(self.central_widget)
-        self.details_error_text.setObjectName('details_error_text')
-        self.details_error_text.setGeometry(QRect(277, 445, 451, 41))
-        font = LoginScreenClass.create_font('Gadugi', 20, True)
-        self.details_error_text.setFont(font)
-        self.details_error_text.setAlignment(Qt.AlignCenter)
-        self.details_error_text.setStyleSheet(
+        self.message_label = QLabel(self.central_widget)
+        self.message_label.setObjectName('message_label')
+        self.message_label.setGeometry(QRect(0, 440, 960, 40))
+        font = RegisterScreenClass.create_font('Gadugi', 18, True)
+        self.message_label.setFont(font)
+        self.message_label.setAlignment(Qt.AlignCenter)
+        self.message_label.setStyleSheet(
             'background-image: url();'
             'color: rgb(255, 255, 255);')
-        self.details_error_text.hide()
-
-        self.connection_error_text = QLabel(self.central_widget)
-        self.connection_error_text.setObjectName('connection_error_text')
-        self.connection_error_text.setGeometry(QRect(360, 445, 240, 41))
-        font = LoginScreenClass.create_font('Gadugi', 20, True)
-        self.connection_error_text.setFont(font)
-        self.connection_error_text.setAlignment(Qt.AlignCenter)
-        self.connection_error_text.setStyleSheet(
-            'background-image: url();'
-            'color: rgb(255, 255, 255);')
-        self.connection_error_text.hide()
+        self.message_label.hide()
 
         LoginWindow.setCentralWidget(self.central_widget)
 
@@ -241,12 +235,7 @@ class LoginScreenClass(GUIScreenClass):
         self.passwordLineEdit.setPlaceholderText(QCoreApplication.translate('LoginWindow', 'Password', None))
         self.signInButton.setText(QCoreApplication.translate('LoginWindow', 'Sign in', None))
         self.signUpButton.setText(QCoreApplication.translate('LoginWindow', 'Don\'t have an account? Sign up', None))
-        self.passwordShowButton.setText('')
-        self.red_x.setText('')
-        self.details_error_text.setText(
-            QCoreApplication.translate('LoginWindow', 'Your login details was incorrect', None))
-        self.connection_error_text.setText(
-            QCoreApplication.translate('LoginWindow', 'Connection Error', None))
+        self.message_label.setText(QCoreApplication.translate('LoginWindow', '', None))
 
         QMetaObject.connectSlotsByName(LoginWindow)
 
@@ -289,62 +278,61 @@ class LoginScreenClass(GUIScreenClass):
         return self.passwordLineEdit.echoMode() == QLineEdit.Password
 
     def sign_in_handler(self) -> None:
-        operation_result = None  # external.ext_sign_in_handler(self.emailLineEdit.text(), self.passwordLineEdit.text())
+        email = self.emailLineEdit.text()
+        password = self.passwordLineEdit.text()
+        if not is_valid_email(email):
+            self.remove_message()
+            self.change_message('Email Bad Format')
+            self.add_message(Icon.Red_X)
+            return
+        if not is_valid_password(password):
+            self.remove_message()
+            self.change_message('Password Have to Include 6-32 Characters')
+            self.add_message(Icon.Red_X)
+            return
+        operation_result = external.ext_sign_in_handler(email, password)
         if operation_result == OperationResultType.SUCCEEDED:
-            self.remove_details_error_message()
-            self.remove_connection_error_message()
+            self.remove_message()
             self.open_other_window(CompressScreenClass, close_current=True)
         elif operation_result == OperationResultType.DETAILS_ERROR:
             self.passwordLineEdit.setText('')
-            self.remove_connection_error_message()
-            self.add_details_error_message()
-        else:  # operation_result == OperationResultType.CONNECTION_ERROR
+            self.change_message('User Does Not Exist / Wrong Password')
+            self.add_message(Icon.Red_X)
+        elif operation_result == OperationResultType.CONNECTION_ERROR:
             self.passwordLineEdit.setText('')
-            self.remove_details_error_message()
-            self.add_connection_error_message()
+            self.remove_message()
+            self.change_message('Connection Error')
+            self.add_message(Icon.Red_X)
+        else:
+            self.passwordLineEdit.setText('')
+            self.remove_message()
+            self.change_message('Unknown Error')
+            self.add_message(Icon.Red_X)
 
     def sign_up_handler(self) -> None:
         self.open_other_window(RegisterScreenClass, close_current=True)
 
-    def add_details_error_message(self) -> None:
-        if self.is_details_error_message_displayed():
-            return
-        self.signInButton.setGeometry(QRect(401, 320, 158, 40))
-        self.signUpButton.setGeometry(QRect(280, 380, 400, 40))
-        self.red_x.setGeometry(QRect(245, 445, 41, 41))
-        self.red_x.show()
-        self.details_error_text.show()
+    def add_message(self, icon_type: Icon) -> None:
+        self.buttons_arrangement_with_message()
+        if icon_type == Icon.Red_X:
+            self.red_x_label.show()
+        self.message_label.show()
 
-    def remove_details_error_message(self) -> None:
-        if not self.is_details_error_message_displayed():
-            return
+    def buttons_arrangement_with_message(self):
+        self.signInButton.setGeometry(QRect(401, 320, 158, 40))
+        self.signUpButton.setGeometry(QRect(280, 390, 400, 40))
+
+    def buttons_arrangement_without_message(self):
         self.signInButton.setGeometry(QRect(401, 340, 158, 40))
         self.signUpButton.setGeometry(QRect(280, 410, 400, 40))
-        self.red_x.hide()
-        self.details_error_text.hide()
 
-    def is_details_error_message_displayed(self) -> bool:
-        return self.details_error_text.isVisible()
+    def change_message(self, new_error_msg: str):
+        self.message_label.setText(new_error_msg)
 
-    def add_connection_error_message(self) -> None:
-        if self.is_connection_error_message_displayed():
-            return
-        self.signInButton.setGeometry(QRect(401, 320, 158, 40))
-        self.signUpButton.setGeometry(QRect(280, 380, 400, 40))
-        self.red_x.setGeometry(QRect(320, 445, 41, 41))
-        self.red_x.show()
-        self.connection_error_text.show()
-
-    def remove_connection_error_message(self) -> None:
-        if not self.is_connection_error_message_displayed():
-            return
-        self.signInButton.setGeometry(QRect(401, 340, 158, 40))
-        self.signUpButton.setGeometry(QRect(280, 410, 400, 40))
-        self.red_x.hide()
-        self.connection_error_text.hide()
-
-    def is_connection_error_message_displayed(self) -> bool:
-        return self.connection_error_text.isVisible()
+    def remove_message(self) -> None:
+        self.buttons_arrangement_without_message()
+        self.red_x_label.hide()
+        self.message_label.hide()
 
 
 class RegisterScreenClass(GUIScreenClass):
@@ -385,6 +373,15 @@ class RegisterScreenClass(GUIScreenClass):
         self.zip_label_right.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/zip_image/zip_image.png);')
+
+        self.back_sign_in_button = QPushButton(self.central_widget)
+        self.back_sign_in_button.setObjectName('back_sign_in_button')
+        self.back_sign_in_button.setGeometry(QRect(10, 10, 37, 24))
+        self.back_sign_in_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.back_sign_in_button.clicked.connect(self.back_sign_in_handler)
+        self.back_sign_in_button.setStyleSheet(
+            'background-image: url();'
+            'border-image: url(:/backs/back_arrow.png);')
 
         self.emailLineEdit = QLineEdit(self.central_widget)
         self.emailLineEdit.setObjectName('emailLineEdit')
@@ -546,54 +543,32 @@ class RegisterScreenClass(GUIScreenClass):
             'color: rgb(255, 255, 255);'
             'border-radius:10px;')
 
-        self.green_v = QLabel(self.central_widget)
-        self.green_v.setObjectName('green_v')
-        self.green_v.setGeometry(QRect(195, 403, 45, 45))
-        self.green_v.setStyleSheet(
+        self.green_v_label = QLabel(self.central_widget)
+        self.green_v_label.setObjectName('green_v_label')
+        self.green_v_label.setGeometry(QRect(460, 480, 40, 40))
+        self.green_v_label.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/green_v/green_v.png);')
-        self.green_v.hide()
+        self.green_v_label.hide()
 
-        self.scan_success_text = QLabel(self.central_widget)
-        self.scan_success_text.setObjectName('scan_success_text')
-        self.scan_success_text.setGeometry(QRect(230, 400, 551, 41))
-        font = RegisterScreenClass.create_font('Gadugi', 20, True)
-        self.scan_success_text.setFont(font)
-        self.scan_success_text.setAlignment(Qt.AlignCenter)
-        self.scan_success_text.setStyleSheet(
-            'background-image: url();'
-            'color: rgb(255, 255, 255);')
-        self.scan_success_text.hide()
-
-        self.red_x = QLabel(self.central_widget)
-        self.red_x.setObjectName('red_x')
-        self.red_x.setGeometry(QRect(179, 459, 43, 43))
-        self.red_x.setStyleSheet(
+        self.red_x_label = QLabel(self.central_widget)
+        self.red_x_label.setObjectName('red_x_label')
+        self.red_x_label.setGeometry(QRect(460, 480, 40, 40))
+        self.red_x_label.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/red_x/red_x.png);')
-        self.red_x.hide()
+        self.red_x_label.hide()
 
-        self.details_error_text = QLabel(self.central_widget)
-        self.details_error_text.setObjectName('details_error_text')
-        self.details_error_text.setGeometry(QRect(182, 460, 631, 41))
+        self.message_label = QLabel(self.central_widget)
+        self.message_label.setObjectName('message_label')
+        self.message_label.setGeometry(QRect(0, 440, 960, 40))
         font = RegisterScreenClass.create_font('Gadugi', 18, True)
-        self.details_error_text.setFont(font)
-        self.details_error_text.setAlignment(Qt.AlignCenter)
-        self.details_error_text.setStyleSheet(
+        self.message_label.setFont(font)
+        self.message_label.setAlignment(Qt.AlignCenter)
+        self.message_label.setStyleSheet(
             'background-image: url();'
             'color: rgb(255, 255, 255);')
-        self.details_error_text.hide()
-
-        self.connection_error_text = QLabel(self.central_widget)
-        self.connection_error_text.setObjectName('connection_error_text')
-        self.connection_error_text.setGeometry(QRect(360, 460, 240, 41))
-        font = LoginScreenClass.create_font('Gadugi', 20, True)
-        self.connection_error_text.setFont(font)
-        self.connection_error_text.setAlignment(Qt.AlignCenter)
-        self.connection_error_text.setStyleSheet(
-            'background-image: url();'
-            'color: rgb(255, 255, 255);')
-        self.connection_error_text.hide()
+        self.message_label.hide()
 
         RegisterWindow.setCentralWidget(self.central_widget)
 
@@ -610,12 +585,7 @@ class RegisterScreenClass(GUIScreenClass):
         self.numbersCheckBox.setText(QCoreApplication.translate('RegisterWindow', 'Numbers included', None))
         self.symbolsCheckBox.setText(QCoreApplication.translate('RegisterWindow', 'Symbols included', None))
         self.generatePasswordButton.setText(QCoreApplication.translate('RegisterWindow', 'Generate Password', None))
-        self.scan_success_text.setText(QCoreApplication.translate(
-            'RegisterWindow', 'Your Face has been Scanned Successfully', None))
-        self.details_error_text.setText(QCoreApplication.translate(
-            'RegisterWindow', 'This email is already in use by another account', None))
-        self.connection_error_text.setText(QCoreApplication.translate(
-            'RegisterWindow', 'Connection Error', None))
+        self.message_label.setText(QCoreApplication.translate('RegisterWindow', '', None))
 
         self.successful_scans = ()
 
@@ -696,6 +666,9 @@ class RegisterScreenClass(GUIScreenClass):
         if self.is_password_hidden():
             self.passwordLineEdit.setEchoMode(QLineEdit.Normal)
 
+    def back_sign_in_handler(self) -> None:
+        self.open_other_window(LoginScreenClass, close_current=True)
+
     def scan_handler(self) -> None:
         if self.scanButtonClickBlock:
             return
@@ -720,88 +693,67 @@ class RegisterScreenClass(GUIScreenClass):
             if self.scan_number == 3:
                 self.scanButtonClickBlock = True
                 self.scanButton.setText('Scan My Face (3 Times): 0 Remaining')
-                self.add_scan_confirm_message()
+                self.remove_message()
+                self.change_message('Your Face has been Scanned Successfully')
+                self.add_message(Icon.Green_V)
             else:
                 self.scanButton.setText(f'Scan My Face (3 Times): {3 - self.scan_number} Remaining')
         else:
             self.scan_number -= 1
 
     def register_handler(self) -> None:
+
         if not self.scanButtonClickBlock:
             return
-        result = external.ext_register_handler(self.emailLineEdit.text(), self.passwordLineEdit.text(),
-                                               self.successful_scans)
+        email = self.emailLineEdit.text()
+        password = self.passwordLineEdit.text()
+        if not is_valid_email(email):
+            self.remove_message()
+            self.change_message('Email Bad Format')
+            self.add_message(Icon.Red_X)
+            return
+        if not is_valid_password(password):
+            self.remove_message()
+            self.change_message('Password Have to Include 6-32 Characters')
+            self.add_message(Icon.Red_X)
+            return
+        result = external.ext_register_handler(email, password, self.successful_scans)
         if result == OperationResultType.SUCCEEDED:
-            self.remove_details_error_message()
-            self.remove_connection_error_message()
+            self.remove_message()
             self.open_other_window(CompressScreenClass, close_current=True)
         elif result == OperationResultType.DETAILS_ERROR:
-            self.remove_scan_confirm_message()
-            self.remove_connection_error_message()
-            self.add_details_error_message()
+            self.remove_message()
+            self.change_message('This Email is Already in Use by Another Account')
+            self.add_message(Icon.Red_X)
         else:
-            self.remove_scan_confirm_message()
-            self.remove_details_error_message()
-            self.add_connection_error_message()
+            self.remove_message()
+            self.change_message('Connection Error')
+            self.add_message(Icon.Red_X)
 
-    def add_scan_confirm_message(self) -> None:
-        if self.is_scan_confirm_message_displayed():
-            return
-        self.scanButton.setGeometry(QRect(230, 340, 500, 40))
-        self.registerButton.setGeometry(QRect(380, 460, 200, 40))
-        self.green_v.show()
-        self.scan_success_text.show()
+    def add_message(self, icon_type: Icon) -> None:
+        self.buttons_arrangement_with_message()
+        if icon_type == Icon.Green_V:
+            self.green_v_label.show()
+        else:
+            self.red_x_label.show()
+        self.message_label.show()
 
-    def remove_scan_confirm_message(self) -> None:
-        if not self.is_scan_confirm_message_displayed():
-            return
-        self.green_v.hide()
-        self.scan_success_text.hide()
-        self.scanButton.setGeometry(QRect(230, 340, 500, 40))
-        self.registerButton.setGeometry(QRect(380, 410, 200, 40))
+    def buttons_arrangement_with_message(self):
+        self.scanButton.setGeometry(QRect(230, 320, 500, 40))
+        self.registerButton.setGeometry(QRect(380, 390, 200, 40))
 
-    def is_scan_confirm_message_displayed(self) -> bool:
-        return self.scan_success_text.isVisible()
-
-    def add_details_error_message(self) -> None:
-        if self.is_details_error_message_displayed():
-            return
-        self.scanButton.setGeometry(QRect(230, 340, 500, 40))
-        self.registerButton.setGeometry(QRect(380, 400, 200, 40))
-        self.red_x.setGeometry(QRect(179, 459, 43, 43))
-        self.red_x.show()
-        self.details_error_text.show()
-
-    def remove_details_error_message(self) -> None:
-        if not self.is_details_error_message_displayed():
-            return
-        self.red_x.hide()
-        self.details_error_text.hide()
+    def buttons_arrangement_without_message(self):
         self.scanButton.setGeometry(QRect(230, 340, 500, 40))
         self.registerButton.setGeometry(QRect(380, 410, 200, 40))
 
-    def is_details_error_message_displayed(self) -> bool:
-        return self.details_error_text.isVisible()
+    def change_message(self, new_error_msg: str):
+        self.message_label.setText(new_error_msg)
 
-    def add_connection_error_message(self) -> None:
-        if self.is_connection_error_message_displayed():
-            return
-        self.scanButton.setGeometry(QRect(230, 340, 500, 40))
-        self.registerButton.setGeometry(QRect(380, 400, 200, 40))
-        self.red_x.setGeometry(QRect(320, 459, 41, 41))
-        self.red_x.show()
-        self.connection_error_text.show()
-
-    def remove_connection_error_message(self) -> None:
-        if not self.is_connection_error_message_displayed():
-            return
-        self.scanButton.setGeometry(QRect(230, 340, 500, 40))
-        self.registerButton.setGeometry(QRect(380, 410, 200, 40))
-        self.red_x.hide()
-        self.connection_error_text.hide()
-
-    def is_connection_error_message_displayed(self) -> bool:
-        return self.connection_error_text.isVisible()
+    def remove_message(self) -> None:
+        self.buttons_arrangement_without_message()
+        self.green_v_label.hide()
+        self.red_x_label.hide()
+        self.message_label.hide()
 
 
 class CompressScreenClass(GUIScreenClass):
@@ -819,9 +771,18 @@ class CompressScreenClass(GUIScreenClass):
             'background-image: url(:/bg_image/gray_white_background.jpg);'
             'background-position: center;')
 
+        self.logout_button = QPushButton(self.central_widget)
+        self.logout_button.setObjectName('back_sign_in_button')
+        self.logout_button.setGeometry(QRect(10, 10, 60, 60))
+        self.logout_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.logout_button.clicked.connect(self.logout_handler)
+        self.logout_button.setStyleSheet(
+            'background-image: url();'
+            'border-image: url(:/backs/logout.png);')
+
         self.decompressButton = QPushButton(self.central_widget)
         self.decompressButton.setObjectName('decompressButton')
-        self.decompressButton.setGeometry(QRect(95, 120, 290, 80))
+        self.decompressButton.setGeometry(QRect(95, 110, 290, 80))
         font = CompressScreenClass.create_font('Gadugi', 18, True)
         self.decompressButton.setFont(font)
         self.decompressButton.setCursor(QCursor(Qt.PointingHandCursor))
@@ -838,7 +799,7 @@ class CompressScreenClass(GUIScreenClass):
 
         self.compressButton = QPushButton(self.central_widget)
         self.compressButton.setObjectName('decompressButton')
-        self.compressButton.setGeometry(QRect(575, 120, 290, 80))
+        self.compressButton.setGeometry(QRect(575, 110, 290, 80))
         font = CompressScreenClass.create_font('Gadugi', 18, True)
         self.compressButton.setFont(font)
         self.compressButton.setCursor(QCursor(Qt.PointingHandCursor))
@@ -855,7 +816,7 @@ class CompressScreenClass(GUIScreenClass):
 
         self.unlockButton = QPushButton(self.central_widget)
         self.unlockButton.setObjectName('unlockButton')
-        self.unlockButton.setGeometry(QRect(142, 230, 196, 210))
+        self.unlockButton.setGeometry(QRect(142, 220, 196, 210))
         self.unlockButton.setCursor(QCursor(Qt.PointingHandCursor))
         self.unlockButton.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.Decompress, EventType.Pressed))
@@ -868,7 +829,7 @@ class CompressScreenClass(GUIScreenClass):
 
         self.lockButton = QPushButton(self.central_widget)
         self.lockButton.setObjectName('lockButton')
-        self.lockButton.setGeometry(QRect(652, 230, 136, 210))
+        self.lockButton.setGeometry(QRect(652, 220, 136, 210))
         self.lockButton.setCursor(QCursor(Qt.PointingHandCursor))
         self.lockButton.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.Compress, EventType.Pressed))
@@ -879,31 +840,39 @@ class CompressScreenClass(GUIScreenClass):
             'background-image: url();'
             'border-image: url(:/locks/lock.png);')
 
-        self.red_x = QLabel(self.central_widget)
-        self.red_x.setObjectName('red_x')
-        self.red_x.setGeometry(QRect(455, 415, 50, 50))
-        self.red_x.setStyleSheet(
+        self.green_v_label = QLabel(self.central_widget)
+        self.green_v_label.setObjectName('green_v_label')
+        self.green_v_label.setGeometry(QRect(455, 485, 45, 45))
+        self.green_v_label.setStyleSheet(
+            'background-image: url();'
+            'border-image: url(:/green_v/green_v.png);')
+        self.green_v_label.hide()
+
+        self.red_x_label = QLabel(self.central_widget)
+        self.red_x_label.setObjectName('red_x_label')
+        self.red_x_label.setGeometry(QRect(455, 485, 45, 45))
+        self.red_x_label.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/red_x/red_x.png);')
-        self.red_x.hide()
+        self.red_x_label.hide()
 
-        self.error_text = QLabel(self.central_widget)
-        self.error_text.setObjectName('error_text')
-        self.error_text.setGeometry(QRect(0, 470, 960, 41))
-        font = RegisterScreenClass.create_font('Gadugi', 28, True)
-        self.error_text.setFont(font)
-        self.error_text.setAlignment(Qt.AlignCenter)
-        self.error_text.setStyleSheet(
+        self.message_label = QLabel(self.central_widget)
+        self.message_label.setObjectName('message_label')
+        self.message_label.setGeometry(QRect(0, 440, 960, 40))
+        font = RegisterScreenClass.create_font('Gadugi', 24, True)
+        self.message_label.setFont(font)
+        self.message_label.setAlignment(Qt.AlignCenter)
+        self.message_label.setStyleSheet(
             'background-image: url();'
             'color: rgb(255, 255, 255);')
-        self.error_text.hide()
+        self.message_label.hide()
 
         CompressWindow.setCentralWidget(self.central_widget)
 
         CompressWindow.setWindowTitle(QCoreApplication.translate('CompressWindow', 'FZIP Locker', None))
         self.decompressButton.setText(QCoreApplication.translate('CompressWindow', 'Decompress', None))
         self.compressButton.setText(QCoreApplication.translate('CompressWindow', 'Compress', None))
-        self.error_text.setText(QCoreApplication.translate('CompressWindow', 'Error Occurred', None))
+        self.message_label.setText(QCoreApplication.translate('CompressWindow', '', None))
 
         self.paths = {}
 
@@ -949,6 +918,10 @@ class CompressScreenClass(GUIScreenClass):
                     'color: rgb(255, 255, 255);'
                     'border-radius:20px;')
 
+    def logout_handler(self):
+        external.ext_logout_handler()
+        self.open_other_window(LoginScreenClass, close_current=True)
+
     def decompress_handler(self) -> None:
         self.this_window.setEnabled(False)
         operation_result, path = external.ext_decompress_handler_select_lock_file()
@@ -956,11 +929,11 @@ class CompressScreenClass(GUIScreenClass):
         if operation_result == OperationResultType.DETAILS_ERROR:  # Cancel when choosing file
             return
         if operation_result == OperationResultType.UNKNOWN_ERROR:
-            self.change_error_message('Unknown Error Occurred')
-            self.add_error_message()
+            self.change_message('Unknown Error')
+            self.add_message(Icon.Red_X)
             return
         self.paths['decompress_lock_file'] = path
-        self.remove_error_message()
+        self.remove_message()
         self.this_window.setEnabled(False)
         roi_gray, roi_preview = detect_face()
         if roi_gray is None:
@@ -979,12 +952,16 @@ class CompressScreenClass(GUIScreenClass):
         shared_Compress_FaceScanning_image_valid = False
 
         operation_result = external.ext_decompress_handler_face_authentication(roi_gray)
+        if operation_result == OperationResultType.DETAILS_ERROR:
+            self.change_message('Face Authentication Failed')
+            self.add_message(Icon.Red_X)
+            return
         if operation_result == OperationResultType.UNKNOWN_ERROR:
-            self.change_error_message('Unknown Error Occurred')
-            self.add_error_message()
+            self.change_message('Unknown Error')
+            self.add_message(Icon.Red_X)
             return
 
-        self.remove_error_message()
+        self.remove_message()
         self.this_window.setEnabled(False)
 
         self.open_other_window(PasswordScreenClass, close_current=False,
@@ -997,25 +974,32 @@ class CompressScreenClass(GUIScreenClass):
         if not shared_Compress_Password_zip_pwd:
             return
 
-        operation_result, non_encrypted_path = \
-            external.ext_decompress_handler_decrypt_file(self.paths['decompress_lock_file'])
+        operation_result, non_encrypted_path = external.ext_decompress_handler_decrypt_file(
+            self.paths['decompress_lock_file'])
+
+        if operation_result == OperationResultType.DETAILS_ERROR:
+            self.change_message('The File Does Not Belong to You')
+            self.add_message(Icon.Red_X)
+            return
 
         if operation_result == OperationResultType.UNKNOWN_ERROR:
-            self.change_error_message('Unknown Error Occurred')
-            self.add_error_message()
+            self.change_message('Unknown Error')
+            self.add_message(Icon.Red_X)
             return
         operation_result = external.ext_decompress_handler_extract_zip(
             non_encrypted_path, shared_Compress_Password_zip_pwd, self.paths['decompress_lock_file'])
         if operation_result == OperationResultType.SUCCEEDED:
-            self.remove_error_message()
+            self.remove_message()
+            self.change_message('Decompression Completed Successfully')
+            self.add_message(Icon.Green_V)
 
         elif operation_result == OperationResultType.DETAILS_ERROR:
-            self.change_error_message('Incorrect File Password')
-            self.add_error_message()
+            self.change_message('Incorrect File Password')
+            self.add_message(Icon.Red_X)
 
         else:  # operation_result == OperationResultType.UNKNOWN_ERROR
-            self.change_error_message('Unknown Error Occurred')
-            self.add_error_message()
+            self.change_message('Unknown Error')
+            self.add_message(Icon.Red_X)
 
     def compress_handler(self) -> None:
         self.this_window.setEnabled(False)
@@ -1024,8 +1008,8 @@ class CompressScreenClass(GUIScreenClass):
         if operation_result == OperationResultType.DETAILS_ERROR:  # Cancel when choosing file
             return
         if operation_result == OperationResultType.UNKNOWN_ERROR:
-            self.change_error_message('Unknown Error Occurred')
-            self.add_error_message()
+            self.change_message('Unknown Error')
+            self.add_message(Icon.Red_X)
             return
         self.paths['compress_files'] = paths
 
@@ -1035,12 +1019,12 @@ class CompressScreenClass(GUIScreenClass):
         if operation_result == OperationResultType.DETAILS_ERROR:  # Cancel when choosing file
             return
         if operation_result == OperationResultType.UNKNOWN_ERROR:
-            self.change_error_message('Unknown Error Occurred')
-            self.add_error_message()
+            self.change_message('Unknown Error')
+            self.add_message(Icon.Red_X)
             return
         self.paths['compress_lock_file'] = path
 
-        self.remove_error_message()
+        self.remove_message()
 
         self.this_window.setEnabled(False)
 
@@ -1057,34 +1041,33 @@ class CompressScreenClass(GUIScreenClass):
         operation_result, zip_path = external.ext_compress_handler_archive_zip(
             self.paths['compress_files'], self.paths['compress_lock_file'], shared_Compress_Password_zip_pwd)
         if operation_result == OperationResultType.UNKNOWN_ERROR:
-            self.change_error_message('Unknown Error Occurred')
-            self.add_error_message()
+            self.change_message('Unknown Error')
+            self.add_message(Icon.Red_X)
             return
 
         operation_result = external.ext_compress_handler_encrypt_file(self.paths['compress_lock_file'])
         if operation_result == OperationResultType.SUCCEEDED:
-            self.remove_error_message()
+            self.remove_message()
+            self.change_message('Compression Completed Successfully')
+            self.add_message(Icon.Green_V)
         else:  # operation_result == OperationResultType.UNKNOWN_ERROR
-            self.change_error_message('Unknown Error Occurred')
-            self.add_error_message()
+            self.change_message('Unknown Error')
+            self.add_message(Icon.Red_X)
 
-    def add_error_message(self) -> None:
-        if not self.is_error_message_displayed():
-            self.red_x.show()
-            self.error_text.show()
+    def add_message(self, icon_type: Icon) -> None:
+        if icon_type == Icon.Green_V:
+            self.green_v_label.show()
+        else:
+            self.red_x_label.show()
+        self.message_label.show()
 
-    def change_error_message(self, new_error_msg: str):
-        if self.error_text.text() == new_error_msg:
-            return
-        self.error_text.setText(new_error_msg)
+    def change_message(self, new_error_msg: str):
+        self.message_label.setText(new_error_msg)
 
-    def remove_error_message(self) -> None:
-        if self.is_error_message_displayed():
-            self.red_x.hide()
-            self.error_text.hide()
-
-    def is_error_message_displayed(self) -> bool:
-        return self.red_x.isVisible()
+    def remove_message(self) -> None:
+        self.green_v_label.hide()
+        self.red_x_label.hide()
+        self.message_label.hide()
 
 
 class FaceScanningScreenClass(GUIScreenClass):
@@ -1205,18 +1188,14 @@ class FaceScanningScreenClass(GUIScreenClass):
                     'border-radius:20px;')
 
     def no_handler(self) -> None:
-        global shared_Register_FaceScanning_image_valid
-        global shared_Compress_FaceScanning_image_valid
+        global shared_Register_FaceScanning_image_valid, shared_Compress_FaceScanning_image_valid
         shared_Register_FaceScanning_image_valid = False
         shared_Compress_FaceScanning_image_valid = False
         self.close_by_X = False
         self.this_window.close()
-        if self.callback_func:
-            self.callback_func()
 
     def yes_handler(self) -> None:
-        global shared_Register_FaceScanning_image_valid
-        global shared_Compress_FaceScanning_image_valid
+        global shared_Register_FaceScanning_image_valid, shared_Compress_FaceScanning_image_valid
         shared_Register_FaceScanning_image_valid = True
         shared_Compress_FaceScanning_image_valid = True
         self.close_by_X = False
@@ -1224,8 +1203,7 @@ class FaceScanningScreenClass(GUIScreenClass):
 
     def close_event(self, event):
         if self.close_by_X:
-            global shared_Register_FaceScanning_image_valid
-            global shared_Compress_FaceScanning_image_valid
+            global shared_Register_FaceScanning_image_valid, shared_Compress_FaceScanning_image_valid
             shared_Register_FaceScanning_image_valid = False
             shared_Compress_FaceScanning_image_valid = False
         if self.callback_func:
@@ -1485,7 +1463,8 @@ class PasswordScreenClass(GUIScreenClass):
             self.passwordLineEdit.setEchoMode(QLineEdit.Normal)
 
     def submit_handler(self) -> None:
-        if not valid_password(self.passwordLineEdit.text()):
+        password = self.passwordLineEdit.text()
+        if not is_valid_password(password):
             return
         global shared_Compress_Password_zip_pwd
         shared_Compress_Password_zip_pwd = self.passwordLineEdit.text()
@@ -1509,24 +1488,3 @@ def run_window(WindowClass: type, image=None) -> None:
         WindowClass(MainWindow, None)
     MainWindow.show()
     app.exec_()
-
-
-if __name__ == '__main__':
-    pass
-    print('Login - 1\nRegister - 2\nCompress - 3\nFace Scanning - 4\nPassword - 5')
-    # choice = input()[0]
-    choice = '2'
-    if choice == '1':
-        run_window(LoginScreenClass)
-    elif choice == '2':
-        run_window(RegisterScreenClass)
-    elif choice == '3':
-        run_window(CompressScreenClass)
-    elif choice == '4':
-        import pickle
-
-        g, p = pickle.load(open('./f', 'rb'))
-        temp = p.copy()
-        run_window(FaceScanningScreenClass, p)
-    else:
-        run_window(PasswordScreenClass, True)
