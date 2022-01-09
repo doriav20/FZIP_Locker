@@ -1,6 +1,5 @@
 import smtplib
 from email.message import EmailMessage
-import re
 
 USERNAME = 'faceziplocker'
 ADDRESS = 'faceziplocker@gmail.com'
@@ -69,14 +68,6 @@ HTML = '''
 '''
 
 
-def address_validation(receiver_address: str) -> bool:
-    try:
-        result = re.search(r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)', receiver_address)
-        return result is not None
-    except:
-        return False
-
-
 def create_mail(receiver_address: str) -> str:
     try:
         msg = EmailMessage()
@@ -92,8 +83,6 @@ def create_mail(receiver_address: str) -> str:
 
 
 def send_email(receiver_address: str) -> bool:
-    if not address_validation(receiver_address):
-        return False
     try:
         msg = create_mail(receiver_address)  # Create SMTP body
         if not msg:
