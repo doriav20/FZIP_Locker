@@ -30,13 +30,12 @@ class ButtonType(Enum):
     SignIn = 1
     SignUp = 2
     Scan = 3
-    Register = 4
-    Generate_Password = 5
-    Decompress = 6
-    Compress = 7
-    NO = 8
-    YES = 9
-    Submit = 10
+    Generate_Password = 4
+    Decompress = 5
+    Compress = 6
+    NO = 7
+    YES = 8
+    Submit = 9
 
 
 class Icon(Enum):
@@ -58,7 +57,7 @@ GradientBrightGreen = 'qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:
 GradientBlueReducedOpacity = 'qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,stop:0 rgba(10, 112, 164, 100), stop:0.3125 rgba(10, 112, 164, 100), stop:0.795455 rgba(33, 43, 255, 100), stop:1 rgba(33, 43, 255, 100));'
 GradientInvertBlueReducedOpacity = 'qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(33, 43, 255, 100), stop:0.3125 rgba(33, 43, 255, 100), stop:0.795455 rgba(10, 112, 164, 100), stop:1 rgba(10, 112, 164, 100));'
 
-shared_Register_FaceScanning_image_valid = False  # Shared with Register & Face Scanning Screens
+shared_SignUp_FaceScanning_image_valid = False  # Shared with SignUp & Face Scanning Screens
 shared_Compress_Password_zip_pwd = ''  # Shared with Compress & Password Screens
 shared_Compress_FaceScanning_image_valid = False  # Shared with Compress & Face Scanning Screens
 
@@ -102,16 +101,16 @@ class GUIScreenClass(AbstractBaseClass):
         return font
 
 
-class LoginScreenClass(GUIScreenClass):
-    def __init__(self, LoginWindow: QMainWindow, callback_func: FunctionType) -> None:
-        super().__init__(LoginWindow, callback_func)
-        if not LoginWindow.objectName():
-            LoginWindow.setObjectName('LoginWindow')
-        LoginWindow.resize(960, 540)
-        LoginWindow.setMinimumSize(QSize(960, 540))
-        LoginWindow.setMaximumSize(QSize(960, 540))
+class SignInScreenClass(GUIScreenClass):
+    def __init__(self, SignInWindow: QMainWindow, callback_func: FunctionType) -> None:
+        super().__init__(SignInWindow, callback_func)
+        if not SignInWindow.objectName():
+            SignInWindow.setObjectName('SignInWindow')
+        SignInWindow.resize(960, 540)
+        SignInWindow.setMinimumSize(QSize(960, 540))
+        SignInWindow.setMaximumSize(QSize(960, 540))
 
-        self.central_widget = QWidget(LoginWindow)
+        self.central_widget = QWidget(SignInWindow)
         self.central_widget.setObjectName('central_widget')
         self.central_widget.setStyleSheet(
             'background-image: url(:/bg_image/gray_background.jpg);'
@@ -120,89 +119,89 @@ class LoginScreenClass(GUIScreenClass):
         self.title_label = QLabel(self.central_widget)
         self.title_label.setObjectName('title_label')
         self.title_label.setGeometry(QRect(0, 40, 960, 61))
-        font = LoginScreenClass.create_font('Gadugi', 38, True)
+        font = SignInScreenClass.create_font('Gadugi', 38, True)
         self.title_label.setFont(font)
         self.title_label.setAlignment(Qt.AlignCenter)
         self.title_label.setStyleSheet(
             'background-image: url();'
             'color: rgb(255, 255, 255);')
 
-        self.zip_label_left = QLabel(self.central_widget)
-        self.zip_label_left.setObjectName('zip_label_left')
-        self.zip_label_left.setGeometry(QRect(-60, 10, 341, 521))
-        self.zip_label_left.setStyleSheet(
+        self.zip_left_label = QLabel(self.central_widget)
+        self.zip_left_label.setObjectName('zip_left_label')
+        self.zip_left_label.setGeometry(QRect(-60, 10, 341, 521))
+        self.zip_left_label.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/zip_image/zip_image.png);')
 
-        self.zip_label_right = QLabel(self.central_widget)
-        self.zip_label_right.setObjectName('zip_label_right')
-        self.zip_label_right.setGeometry(QRect(660, 10, 341, 521))
-        self.zip_label_right.setStyleSheet(
+        self.zip_right_label = QLabel(self.central_widget)
+        self.zip_right_label.setObjectName('zip_right_label')
+        self.zip_right_label.setGeometry(QRect(660, 10, 341, 521))
+        self.zip_right_label.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/zip_image/zip_image.png);')
 
-        self.emailLineEdit = QLineEdit(self.central_widget)
-        self.emailLineEdit.setObjectName('emailLineEdit')
-        self.emailLineEdit.setGeometry(QRect(270, 160, 426, 53))
-        font = LoginScreenClass.create_font('Gadugi', 15, True)
-        self.emailLineEdit.setFont(font)
-        self.emailLineEdit.setEchoMode(QLineEdit.Normal)
-        self.emailLineEdit.setStyleSheet(
+        self.email_line_edit = QLineEdit(self.central_widget)
+        self.email_line_edit.setObjectName('email_line_edit')
+        self.email_line_edit.setGeometry(QRect(270, 160, 426, 53))
+        font = SignInScreenClass.create_font('Gadugi', 15, True)
+        self.email_line_edit.setFont(font)
+        self.email_line_edit.setEchoMode(QLineEdit.Normal)
+        self.email_line_edit.setStyleSheet(
             'background-image: url();'
             'background-color: rgba(0, 0, 0, 0);'
             'border: 1px solid black;'
             'color: rgb(255, 255, 255);')
 
-        self.passwordLineEdit = QLineEdit(self.central_widget)
-        self.passwordLineEdit.setObjectName('passwordLineEdit')
-        self.passwordLineEdit.setGeometry(QRect(270, 240, 426, 53))
-        font = LoginScreenClass.create_font('Gadugi', 15, True)
-        self.passwordLineEdit.setFont(font)
-        self.passwordLineEdit.setEchoMode(QLineEdit.Password)
-        self.passwordLineEdit.setStyleSheet(
+        self.password_line_edit = QLineEdit(self.central_widget)
+        self.password_line_edit.setObjectName('password_line_edit')
+        self.password_line_edit.setGeometry(QRect(270, 240, 426, 53))
+        font = SignInScreenClass.create_font('Gadugi', 15, True)
+        self.password_line_edit.setFont(font)
+        self.password_line_edit.setEchoMode(QLineEdit.Password)
+        self.password_line_edit.setStyleSheet(
             'background-image: url();'
             'background-color: rgba(0, 0, 0, 0);'
             'border: 1px solid black;'
             'color: rgb(255, 255, 255);')
 
-        self.passwordShowButton = QPushButton(self.central_widget)
-        self.passwordShowButton.setObjectName('passwordShowButton')
-        self.passwordShowButton.setGeometry(QRect(662, 260, 27, 16))
-        self.passwordShowButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.passwordShowButton.clicked.connect(self.password_show_handler)
-        self.passwordShowButton.setStyleSheet(
+        self.password_show_button = QPushButton(self.central_widget)
+        self.password_show_button.setObjectName('password_show_button')
+        self.password_show_button.setGeometry(QRect(662, 260, 27, 16))
+        self.password_show_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.password_show_button.clicked.connect(self.password_show_handler)
+        self.password_show_button.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/eye/eye.png);')
 
-        self.signInButton = QPushButton(self.central_widget)
-        self.signInButton.setObjectName('signInButton')
-        self.signInButton.setGeometry(QRect(401, 340, 158, 40))
-        font = LoginScreenClass.create_font('Gadugi', 18, True)
-        self.signInButton.setFont(font)
-        self.signInButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.signInButton.pressed.connect(
+        self.sign_in_button = QPushButton(self.central_widget)
+        self.sign_in_button.setObjectName('sign_in_button')
+        self.sign_in_button.setGeometry(QRect(401, 340, 158, 40))
+        font = SignInScreenClass.create_font('Gadugi', 18, True)
+        self.sign_in_button.setFont(font)
+        self.sign_in_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.sign_in_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.SignIn, EventType.Pressed))
-        self.signInButton.released.connect(
+        self.sign_in_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.SignIn, EventType.Released))
-        self.signInButton.clicked.connect(self.sign_in_handler)
-        self.signInButton.setStyleSheet(
+        self.sign_in_button.clicked.connect(self.sign_in_handler)
+        self.sign_in_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientBlue +
             'color: rgb(255, 255, 255);'
             'border-radius:10px;')
 
-        self.signUpButton = QPushButton(self.central_widget)
-        self.signUpButton.setObjectName('signUpButton')
-        self.signUpButton.setGeometry(QRect(280, 410, 400, 40))
-        font = LoginScreenClass.create_font('Gadugi', 18, True)
-        self.signUpButton.setFont(font)
-        self.signUpButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.signUpButton.pressed.connect(
+        self.sign_up_button = QPushButton(self.central_widget)
+        self.sign_up_button.setObjectName('sign_up_button')
+        self.sign_up_button.setGeometry(QRect(280, 410, 400, 40))
+        font = SignInScreenClass.create_font('Gadugi', 18, True)
+        self.sign_up_button.setFont(font)
+        self.sign_up_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.sign_up_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.SignUp, EventType.Pressed))
-        self.signUpButton.released.connect(
+        self.sign_up_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.SignUp, EventType.Released))
-        self.signUpButton.clicked.connect(self.sign_up_handler)
-        self.signUpButton.setStyleSheet(
+        self.sign_up_button.clicked.connect(self.sign_up_handler)
+        self.sign_up_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientGreen +
             'color: rgb(255, 255, 255);'
@@ -219,7 +218,7 @@ class LoginScreenClass(GUIScreenClass):
         self.message_label = QLabel(self.central_widget)
         self.message_label.setObjectName('message_label')
         self.message_label.setGeometry(QRect(0, 440, 960, 40))
-        font = RegisterScreenClass.create_font('Gadugi', 18, True)
+        font = SignInScreenClass.create_font('Gadugi', 18, True)
         self.message_label.setFont(font)
         self.message_label.setAlignment(Qt.AlignCenter)
         self.message_label.setStyleSheet(
@@ -227,28 +226,28 @@ class LoginScreenClass(GUIScreenClass):
             'color: rgb(255, 255, 255);')
         self.message_label.hide()
 
-        LoginWindow.setCentralWidget(self.central_widget)
+        SignInWindow.setCentralWidget(self.central_widget)
 
-        LoginWindow.setWindowTitle(QCoreApplication.translate('LoginWindow', 'FZIP Locker', None))
-        self.title_label.setText(QCoreApplication.translate('LoginWindow', 'FZIP Locker', None))
-        self.emailLineEdit.setPlaceholderText(QCoreApplication.translate('LoginWindow', 'Email', None))
-        self.passwordLineEdit.setPlaceholderText(QCoreApplication.translate('LoginWindow', 'Password', None))
-        self.signInButton.setText(QCoreApplication.translate('LoginWindow', 'Sign in', None))
-        self.signUpButton.setText(QCoreApplication.translate('LoginWindow', 'Don\'t have an account? Sign up', None))
-        self.message_label.setText(QCoreApplication.translate('LoginWindow', '', None))
+        SignInWindow.setWindowTitle(QCoreApplication.translate('SignInWindow', 'FZIP Locker', None))
+        self.title_label.setText(QCoreApplication.translate('SignInWindow', 'FZIP Locker', None))
+        self.email_line_edit.setPlaceholderText(QCoreApplication.translate('SignInWindow', 'Email', None))
+        self.password_line_edit.setPlaceholderText(QCoreApplication.translate('SignInWindow', 'Password', None))
+        self.sign_in_button.setText(QCoreApplication.translate('SignInWindow', 'Sign in', None))
+        self.sign_up_button.setText(QCoreApplication.translate('SignInWindow', 'Don\'t have an account? Sign up', None))
+        self.message_label.setText(QCoreApplication.translate('SignInWindow', '', None))
 
-        QMetaObject.connectSlotsByName(LoginWindow)
+        QMetaObject.connectSlotsByName(SignInWindow)
 
     def change_pressed_button_style(self, button_type: ButtonType, event_type: EventType) -> None:
         if event_type == EventType.Pressed:
             if button_type == ButtonType.SignIn:
-                self.signInButton.setStyleSheet(
+                self.sign_in_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientRed +
                     'color: rgb(255, 255, 255);'
                     'border-radius:10px;')
             else:
-                self.signUpButton.setStyleSheet(
+                self.sign_up_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientRed +
                     'color: rgb(255, 255, 255);'
@@ -256,13 +255,13 @@ class LoginScreenClass(GUIScreenClass):
 
         else:
             if button_type == ButtonType.SignIn:
-                self.signInButton.setStyleSheet(
+                self.sign_in_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientBlue +
                     'color: rgb(255, 255, 255);'
                     'border-radius:10px;')
             else:
-                self.signUpButton.setStyleSheet(
+                self.sign_up_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientGreen +
                     'color: rgb(255, 255, 255);'
@@ -270,16 +269,16 @@ class LoginScreenClass(GUIScreenClass):
 
     def password_show_handler(self) -> None:
         if self.is_password_hidden():
-            self.passwordLineEdit.setEchoMode(QLineEdit.Normal)
+            self.password_line_edit.setEchoMode(QLineEdit.Normal)
         else:
-            self.passwordLineEdit.setEchoMode(QLineEdit.Password)
+            self.password_line_edit.setEchoMode(QLineEdit.Password)
 
     def is_password_hidden(self) -> bool:
-        return self.passwordLineEdit.echoMode() == QLineEdit.Password
+        return self.password_line_edit.echoMode() == QLineEdit.Password
 
     def sign_in_handler(self) -> None:
-        email = self.emailLineEdit.text()
-        password = self.passwordLineEdit.text()
+        email = self.email_line_edit.text()
+        password = self.password_line_edit.text()
         if not is_valid_email(email):
             self.remove_message()
             self.change_message('Email Bad Format')
@@ -295,22 +294,22 @@ class LoginScreenClass(GUIScreenClass):
             self.remove_message()
             self.open_other_window(CompressScreenClass, close_current=True)
         elif operation_result == OperationResultType.DETAILS_ERROR:
-            self.passwordLineEdit.setText('')
+            self.password_line_edit.setText('')
             self.change_message('User Does Not Exist / Wrong Password')
             self.add_message(Icon.Red_X)
         elif operation_result == OperationResultType.CONNECTION_ERROR:
-            self.passwordLineEdit.setText('')
+            self.password_line_edit.setText('')
             self.remove_message()
             self.change_message('Connection Error')
             self.add_message(Icon.Red_X)
         else:
-            self.passwordLineEdit.setText('')
+            self.password_line_edit.setText('')
             self.remove_message()
             self.change_message('Unknown Error')
             self.add_message(Icon.Red_X)
 
     def sign_up_handler(self) -> None:
-        self.open_other_window(RegisterScreenClass, close_current=True)
+        self.open_other_window(SignUpScreenClass, close_current=True)
 
     def add_message(self, icon_type: Icon) -> None:
         self.buttons_arrangement_with_message()
@@ -319,12 +318,12 @@ class LoginScreenClass(GUIScreenClass):
         self.message_label.show()
 
     def buttons_arrangement_with_message(self):
-        self.signInButton.setGeometry(QRect(401, 320, 158, 40))
-        self.signUpButton.setGeometry(QRect(280, 390, 400, 40))
+        self.sign_in_button.setGeometry(QRect(401, 320, 158, 40))
+        self.sign_up_button.setGeometry(QRect(280, 390, 400, 40))
 
     def buttons_arrangement_without_message(self):
-        self.signInButton.setGeometry(QRect(401, 340, 158, 40))
-        self.signUpButton.setGeometry(QRect(280, 410, 400, 40))
+        self.sign_in_button.setGeometry(QRect(401, 340, 158, 40))
+        self.sign_up_button.setGeometry(QRect(280, 410, 400, 40))
 
     def change_message(self, new_error_msg: str):
         self.message_label.setText(new_error_msg)
@@ -335,16 +334,16 @@ class LoginScreenClass(GUIScreenClass):
         self.message_label.hide()
 
 
-class RegisterScreenClass(GUIScreenClass):
-    def __init__(self, RegisterWindow: QMainWindow, callback_func: FunctionType) -> None:
-        super().__init__(RegisterWindow, callback_func)
-        if not RegisterWindow.objectName():
-            RegisterWindow.setObjectName('RegisterWindow')
-        RegisterWindow.resize(960, 540)
-        RegisterWindow.setMinimumSize(QSize(960, 540))
-        RegisterWindow.setMaximumSize(QSize(960, 540))
+class SignUpScreenClass(GUIScreenClass):
+    def __init__(self, SignUpWindow: QMainWindow, callback_func: FunctionType) -> None:
+        super().__init__(SignUpWindow, callback_func)
+        if not SignUpWindow.objectName():
+            SignUpWindow.setObjectName('SignUpWindow')
+        SignUpWindow.resize(960, 540)
+        SignUpWindow.setMinimumSize(QSize(960, 540))
+        SignUpWindow.setMaximumSize(QSize(960, 540))
 
-        self.central_widget = QWidget(RegisterWindow)
+        self.central_widget = QWidget(SignUpWindow)
         self.central_widget.setObjectName('central_widget')
         self.central_widget.setStyleSheet(
             'background-image: url(:/bg_image/gray_background.jpg);'
@@ -353,24 +352,24 @@ class RegisterScreenClass(GUIScreenClass):
         self.title_label = QLabel(self.central_widget)
         self.title_label.setObjectName('title_label')
         self.title_label.setGeometry(QRect(0, 40, 960, 61))
-        font = RegisterScreenClass.create_font('Gadugi', 38, True)
+        font = SignUpScreenClass.create_font('Gadugi', 38, True)
         self.title_label.setFont(font)
         self.title_label.setAlignment(Qt.AlignCenter)
         self.title_label.setStyleSheet(
             'background-image: url();'
             'color: rgb(255, 255, 255);')
 
-        self.zip_label_left = QLabel(self.central_widget)
-        self.zip_label_left.setObjectName('zip_label_left')
-        self.zip_label_left.setGeometry(QRect(-60, 10, 341, 521))
-        self.zip_label_left.setStyleSheet(
+        self.zip_left_label = QLabel(self.central_widget)
+        self.zip_left_label.setObjectName('zip_left_label')
+        self.zip_left_label.setGeometry(QRect(-60, 10, 341, 521))
+        self.zip_left_label.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/zip_image/zip_image.png);')
 
-        self.zip_label_right = QLabel(self.central_widget)
-        self.zip_label_right.setObjectName('zip_label_right')
-        self.zip_label_right.setGeometry(QRect(660, 10, 341, 521))
-        self.zip_label_right.setStyleSheet(
+        self.zip_right_label = QLabel(self.central_widget)
+        self.zip_right_label.setObjectName('zip_right_label')
+        self.zip_right_label.setGeometry(QRect(660, 10, 341, 521))
+        self.zip_right_label.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/zip_image/zip_image.png);')
 
@@ -383,161 +382,161 @@ class RegisterScreenClass(GUIScreenClass):
             'background-image: url();'
             'border-image: url(:/backs/back_arrow.png);')
 
-        self.emailLineEdit = QLineEdit(self.central_widget)
-        self.emailLineEdit.setObjectName('emailLineEdit')
-        self.emailLineEdit.setGeometry(QRect(270, 160, 426, 53))
-        font = RegisterScreenClass.create_font('Gadugi', 15, True)
-        self.emailLineEdit.setFont(font)
-        self.emailLineEdit.setEchoMode(QLineEdit.Normal)
-        self.emailLineEdit.setStyleSheet(
+        self.email_line_edit = QLineEdit(self.central_widget)
+        self.email_line_edit.setObjectName('email_line_edit')
+        self.email_line_edit.setGeometry(QRect(270, 160, 426, 53))
+        font = SignUpScreenClass.create_font('Gadugi', 15, True)
+        self.email_line_edit.setFont(font)
+        self.email_line_edit.setEchoMode(QLineEdit.Normal)
+        self.email_line_edit.setStyleSheet(
             'background-image: url();'
             'background-color: rgba(0, 0, 0, 0);'
             'border: 1px solid black;'
             'color: rgb(255, 255, 255);')
 
-        self.passwordLineEdit = QLineEdit(self.central_widget)
-        self.passwordLineEdit.setObjectName('passwordLineEdit')
-        self.passwordLineEdit.setGeometry(QRect(270, 240, 426, 53))
-        font = RegisterScreenClass.create_font('Gadugi', 15, True)
-        self.passwordLineEdit.setFont(font)
-        self.passwordLineEdit.setEchoMode(QLineEdit.Password)
-        self.passwordLineEdit.setStyleSheet(
+        self.password_line_edit = QLineEdit(self.central_widget)
+        self.password_line_edit.setObjectName('password_line_edit')
+        self.password_line_edit.setGeometry(QRect(270, 240, 426, 53))
+        font = SignUpScreenClass.create_font('Gadugi', 15, True)
+        self.password_line_edit.setFont(font)
+        self.password_line_edit.setEchoMode(QLineEdit.Password)
+        self.password_line_edit.setStyleSheet(
             'background-image: url();'
             'background-color: rgba(0, 0, 0, 0);'
             'border: 1px solid black;'
             'color: rgb(255, 255, 255);')
 
-        self.scanButton = QPushButton(self.central_widget)
-        self.scanButton.setObjectName('scanButton')
-        self.scanButton.setGeometry(QRect(230, 340, 500, 40))
-        font = RegisterScreenClass.create_font('Gadugi', 18, True)
-        self.scanButton.setFont(font)
-        self.scanButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.scanButton.pressed.connect(
+        self.scan_button = QPushButton(self.central_widget)
+        self.scan_button.setObjectName('scan_button')
+        self.scan_button.setGeometry(QRect(230, 340, 500, 40))
+        font = SignUpScreenClass.create_font('Gadugi', 18, True)
+        self.scan_button.setFont(font)
+        self.scan_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.scan_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.Scan, EventType.Pressed))
-        self.scanButton.released.connect(
+        self.scan_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.Scan, EventType.Released))
-        self.scanButton.clicked.connect(self.scan_handler)
-        self.scanButton.setStyleSheet(
+        self.scan_button.clicked.connect(self.scan_handler)
+        self.scan_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientGray +
             'color: rgb(255, 255, 255);'
             'border-radius:10px;')
-        self.scanButtonClickBlock = False
+        self.scan_buttonClickBlock = False
         self.scan_number = 0
 
-        self.registerButton = QPushButton(self.central_widget)
-        self.registerButton.setObjectName('registerButton')
-        self.registerButton.setGeometry(QRect(380, 410, 200, 40))
-        font = RegisterScreenClass.create_font('Gadugi', 18, True)
-        self.registerButton.setFont(font)
-        self.registerButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.registerButton.pressed.connect(
-            lambda: self.change_pressed_button_style(ButtonType.Register, EventType.Pressed))
-        self.registerButton.released.connect(
-            lambda: self.change_pressed_button_style(ButtonType.Register, EventType.Released))
-        self.registerButton.clicked.connect(self.register_handler)
-        self.registerButton.setStyleSheet(
+        self.sign_up_button = QPushButton(self.central_widget)
+        self.sign_up_button.setObjectName('sign_up_button')
+        self.sign_up_button.setGeometry(QRect(380, 410, 200, 40))
+        font = SignUpScreenClass.create_font('Gadugi', 18, True)
+        self.sign_up_button.setFont(font)
+        self.sign_up_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.sign_up_button.pressed.connect(
+            lambda: self.change_pressed_button_style(ButtonType.SignUp, EventType.Pressed))
+        self.sign_up_button.released.connect(
+            lambda: self.change_pressed_button_style(ButtonType.SignUp, EventType.Released))
+        self.sign_up_button.clicked.connect(self.sign_up_handler)
+        self.sign_up_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientGreen +
             'color: rgb(255, 255, 255);'
             'border-radius:10px;')
 
-        self.passwordShowButton = QPushButton(self.central_widget)
-        self.passwordShowButton.setObjectName('passwordShowButton')
-        self.passwordShowButton.setGeometry(QRect(662, 260, 27, 16))
-        self.passwordShowButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.passwordShowButton.clicked.connect(self.password_show_handler)
-        self.passwordShowButton.setStyleSheet(
+        self.password_show_button = QPushButton(self.central_widget)
+        self.password_show_button.setObjectName('password_show_button')
+        self.password_show_button.setGeometry(QRect(662, 260, 27, 16))
+        self.password_show_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.password_show_button.clicked.connect(self.password_show_handler)
+        self.password_show_button.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/eye/eye.png);')
 
-        self.passwordGeneratorKey = QPushButton(self.central_widget)
-        self.passwordGeneratorKey.setObjectName('passwordGeneratorKey')
-        self.passwordGeneratorKey.setGeometry(QRect(636, 258, 21, 20))
-        self.passwordGeneratorKey.setCursor(QCursor(Qt.PointingHandCursor))
-        self.passwordGeneratorKey.clicked.connect(self.password_generator_handler)
-        self.passwordGeneratorKey.setStyleSheet(
+        self.password_generator_key = QPushButton(self.central_widget)
+        self.password_generator_key.setObjectName('password_generator_key')
+        self.password_generator_key.setGeometry(QRect(636, 258, 21, 20))
+        self.password_generator_key.setCursor(QCursor(Qt.PointingHandCursor))
+        self.password_generator_key.clicked.connect(self.password_generator_handler)
+        self.password_generator_key.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/password_generator_key/password_generator.png);')
 
-        self.passwordGeneratorContainer = QWidget(self.central_widget)
-        self.passwordGeneratorContainer.setObjectName('passwordGeneratorContainer')
-        self.passwordGeneratorContainer.setGeometry(QRect(570, 280, 180, 130))
-        self.passwordGeneratorContainer.setStyleSheet(
+        self.password_generator_container = QWidget(self.central_widget)
+        self.password_generator_container.setObjectName('password_generator_container')
+        self.password_generator_container.setGeometry(QRect(570, 280, 180, 130))
+        self.password_generator_container.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientTransparentWhite +
             'border-radius: 10px')
-        self.passwordGeneratorContainer.hide()
+        self.password_generator_container.hide()
 
-        self.passwordLengthLabel = QLabel(self.passwordGeneratorContainer)
-        self.passwordLengthLabel.setObjectName('passwordLengthLabel')
-        self.passwordLengthLabel.setGeometry(QRect(10, 5, 95, 17))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.passwordLengthLabel.setFont(font)
-        self.passwordLengthLabel.setStyleSheet('background-color: rgb();')
+        self.password_length_label = QLabel(self.password_generator_container)
+        self.password_length_label.setObjectName('password_length_label')
+        self.password_length_label.setGeometry(QRect(10, 5, 95, 17))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.password_length_label.setFont(font)
+        self.password_length_label.setStyleSheet('background-color: rgb();')
 
-        self.passwordLengthLineEdit = QLineEdit(self.passwordGeneratorContainer)
-        self.passwordLengthLineEdit.setObjectName('passwordLengthLineEdit')
-        self.passwordLengthLineEdit.setGeometry(QRect(102, 4, 25, 20))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.passwordLengthLineEdit.setFont(font)
-        self.passwordLengthLineEdit.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        self.passwordLengthLineEdit.setStyleSheet(
+        self.password_length_line_edit = QLineEdit(self.password_generator_container)
+        self.password_length_line_edit.setObjectName('password_length_line_edit')
+        self.password_length_line_edit.setGeometry(QRect(102, 4, 25, 20))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.password_length_line_edit.setFont(font)
+        self.password_length_line_edit.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.password_length_line_edit.setStyleSheet(
             'border-style: solid;'
             'border-width: 2px;'
             'border-color: rgb(0, 0, 0);')
         validator = QIntValidator(1, 99)
-        self.passwordLengthLineEdit.setValidator(validator)
+        self.password_length_line_edit.setValidator(validator)
 
-        self.lowerCaseCheckBox = QCheckBox(self.passwordGeneratorContainer)
-        self.lowerCaseCheckBox.setObjectName('lowerCaseCheckBox')
-        self.lowerCaseCheckBox.setEnabled(False)
-        self.lowerCaseCheckBox.setGeometry(QRect(10, 25, 131, 17))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.lowerCaseCheckBox.setFont(font)
-        self.lowerCaseCheckBox.setStyleSheet('background-color: rgb();')
-        self.lowerCaseCheckBox.setChecked(True)
+        self.lower_case_check_box = QCheckBox(self.password_generator_container)
+        self.lower_case_check_box.setObjectName('lower_case_check_box')
+        self.lower_case_check_box.setEnabled(False)
+        self.lower_case_check_box.setGeometry(QRect(10, 25, 131, 17))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.lower_case_check_box.setFont(font)
+        self.lower_case_check_box.setStyleSheet('background-color: rgb();')
+        self.lower_case_check_box.setChecked(True)
 
-        self.upperCaseCheckBox = QCheckBox(self.passwordGeneratorContainer)
-        self.upperCaseCheckBox.setObjectName('upperCaseCheckBox')
-        self.upperCaseCheckBox.setEnabled(True)
-        self.upperCaseCheckBox.setGeometry(QRect(10, 45, 131, 17))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.upperCaseCheckBox.setFont(font)
-        self.upperCaseCheckBox.setStyleSheet('background-color: rgb();')
-        self.upperCaseCheckBox.setChecked(False)
+        self.upper_case_check_box = QCheckBox(self.password_generator_container)
+        self.upper_case_check_box.setObjectName('upper_case_check_box')
+        self.upper_case_check_box.setEnabled(True)
+        self.upper_case_check_box.setGeometry(QRect(10, 45, 131, 17))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.upper_case_check_box.setFont(font)
+        self.upper_case_check_box.setStyleSheet('background-color: rgb();')
+        self.upper_case_check_box.setChecked(False)
 
-        self.numbersCheckBox = QCheckBox(self.passwordGeneratorContainer)
-        self.numbersCheckBox.setObjectName('numbersCheckBox')
-        self.numbersCheckBox.setEnabled(True)
-        self.numbersCheckBox.setGeometry(QRect(10, 65, 131, 17))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.numbersCheckBox.setFont(font)
-        self.numbersCheckBox.setStyleSheet('background-color: rgb();')
-        self.numbersCheckBox.setChecked(False)
+        self.numbers_check_box = QCheckBox(self.password_generator_container)
+        self.numbers_check_box.setObjectName('numbers_check_box')
+        self.numbers_check_box.setEnabled(True)
+        self.numbers_check_box.setGeometry(QRect(10, 65, 131, 17))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.numbers_check_box.setFont(font)
+        self.numbers_check_box.setStyleSheet('background-color: rgb();')
+        self.numbers_check_box.setChecked(False)
 
-        self.symbolsCheckBox = QCheckBox(self.passwordGeneratorContainer)
-        self.symbolsCheckBox.setObjectName('symbolsCheckBox')
-        self.symbolsCheckBox.setEnabled(True)
-        self.symbolsCheckBox.setGeometry(QRect(10, 85, 131, 17))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.symbolsCheckBox.setFont(font)
-        self.symbolsCheckBox.setStyleSheet('background-color: rgb();')
-        self.symbolsCheckBox.setChecked(False)
+        self.symbols_check_box = QCheckBox(self.password_generator_container)
+        self.symbols_check_box.setObjectName('symbols_check_box')
+        self.symbols_check_box.setEnabled(True)
+        self.symbols_check_box.setGeometry(QRect(10, 85, 131, 17))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.symbols_check_box.setFont(font)
+        self.symbols_check_box.setStyleSheet('background-color: rgb();')
+        self.symbols_check_box.setChecked(False)
 
-        self.generatePasswordButton = QPushButton(self.passwordGeneratorContainer)
-        self.generatePasswordButton.setObjectName('generatePasswordButton')
-        self.generatePasswordButton.setGeometry(QRect(35, 105, 110, 20))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.generatePasswordButton.setFont(font)
-        self.generatePasswordButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.generatePasswordButton.pressed.connect(
+        self.generate_password_button = QPushButton(self.password_generator_container)
+        self.generate_password_button.setObjectName('generate_password_button')
+        self.generate_password_button.setGeometry(QRect(35, 105, 110, 20))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.generate_password_button.setFont(font)
+        self.generate_password_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.generate_password_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.Generate_Password, EventType.Pressed))
-        self.generatePasswordButton.released.connect(
+        self.generate_password_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.Generate_Password, EventType.Released))
-        self.generatePasswordButton.clicked.connect(self.generate_password)
-        self.generatePasswordButton.setStyleSheet(
+        self.generate_password_button.clicked.connect(self.generate_password)
+        self.generate_password_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientOlivePurple +
             'color: rgb(255, 255, 255);'
@@ -562,7 +561,7 @@ class RegisterScreenClass(GUIScreenClass):
         self.message_label = QLabel(self.central_widget)
         self.message_label.setObjectName('message_label')
         self.message_label.setGeometry(QRect(0, 440, 960, 40))
-        font = RegisterScreenClass.create_font('Gadugi', 18, True)
+        font = SignUpScreenClass.create_font('Gadugi', 18, True)
         self.message_label.setFont(font)
         self.message_label.setAlignment(Qt.AlignCenter)
         self.message_label.setStyleSheet(
@@ -570,43 +569,43 @@ class RegisterScreenClass(GUIScreenClass):
             'color: rgb(255, 255, 255);')
         self.message_label.hide()
 
-        RegisterWindow.setCentralWidget(self.central_widget)
+        SignUpWindow.setCentralWidget(self.central_widget)
 
-        RegisterWindow.setWindowTitle(QCoreApplication.translate('RegisterWindow', 'FZIP Locker', None))
-        self.title_label.setText(QCoreApplication.translate('RegisterWindow', 'FZIP Locker', None))
-        self.emailLineEdit.setPlaceholderText(QCoreApplication.translate('RegisterWindow', 'Email', None))
-        self.passwordLineEdit.setPlaceholderText(QCoreApplication.translate('RegisterWindow', 'Password', None))
-        self.scanButton.setText(QCoreApplication.translate(
-            'RegisterWindow', 'Scan My Face (3 Times): 3 Remaining', None))
-        self.registerButton.setText(QCoreApplication.translate('RegisterWindow', 'Register', None))
-        self.passwordLengthLabel.setText(QCoreApplication.translate('RegisterWindow', 'Password Length', None))
-        self.lowerCaseCheckBox.setText(QCoreApplication.translate('RegisterWindow', 'Lower case included', None))
-        self.upperCaseCheckBox.setText(QCoreApplication.translate('RegisterWindow', 'Upper case included', None))
-        self.numbersCheckBox.setText(QCoreApplication.translate('RegisterWindow', 'Numbers included', None))
-        self.symbolsCheckBox.setText(QCoreApplication.translate('RegisterWindow', 'Symbols included', None))
-        self.generatePasswordButton.setText(QCoreApplication.translate('RegisterWindow', 'Generate Password', None))
-        self.message_label.setText(QCoreApplication.translate('RegisterWindow', '', None))
+        SignUpWindow.setWindowTitle(QCoreApplication.translate('SignUpWindow', 'FZIP Locker', None))
+        self.title_label.setText(QCoreApplication.translate('SignUpWindow', 'FZIP Locker', None))
+        self.email_line_edit.setPlaceholderText(QCoreApplication.translate('SignUpWindow', 'Email', None))
+        self.password_line_edit.setPlaceholderText(QCoreApplication.translate('SignUpWindow', 'Password', None))
+        self.scan_button.setText(QCoreApplication.translate(
+            'SignUpWindow', 'Scan My Face (3 Times): 3 Remaining', None))
+        self.sign_up_button.setText(QCoreApplication.translate('SignUpWindow', 'Sign up', None))
+        self.password_length_label.setText(QCoreApplication.translate('SignUpWindow', 'Password Length', None))
+        self.lower_case_check_box.setText(QCoreApplication.translate('SignUpWindow', 'Lower case included', None))
+        self.upper_case_check_box.setText(QCoreApplication.translate('SignUpWindow', 'Upper case included', None))
+        self.numbers_check_box.setText(QCoreApplication.translate('SignUpWindow', 'Numbers included', None))
+        self.symbols_check_box.setText(QCoreApplication.translate('SignUpWindow', 'Symbols included', None))
+        self.generate_password_button.setText(QCoreApplication.translate('SignUpWindow', 'Generate Password', None))
+        self.message_label.setText(QCoreApplication.translate('SignUpWindow', '', None))
 
         self.successful_scans = ()
 
-        QMetaObject.connectSlotsByName(RegisterWindow)
+        QMetaObject.connectSlotsByName(SignUpWindow)
 
     def change_pressed_button_style(self, button_type: ButtonType, event_type: EventType) -> None:
         if event_type == EventType.Pressed:
             if button_type == ButtonType.Scan:
-                self.scanButton.setStyleSheet(
+                self.scan_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientRed +
                     'color: rgb(255, 255, 255);'
                     'border-radius:10px;')
-            elif button_type == ButtonType.Register:
-                self.registerButton.setStyleSheet(
+            elif button_type == ButtonType.SignUp:
+                self.sign_up_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientRed +
                     'color: rgb(255, 255, 255);'
                     'border-radius:10px;')
             else:
-                self.generatePasswordButton.setStyleSheet(
+                self.generate_password_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientRed +
                     'color: rgb(255, 255, 255);'
@@ -614,19 +613,19 @@ class RegisterScreenClass(GUIScreenClass):
 
         else:
             if button_type == ButtonType.Scan:
-                self.scanButton.setStyleSheet(
+                self.scan_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientGray +
                     'color: rgb(255, 255, 255);'
                     'border-radius:10px;')
-            elif button_type == ButtonType.Register:
-                self.registerButton.setStyleSheet(
+            elif button_type == ButtonType.SignUp:
+                self.sign_up_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientGreen +
                     'color: rgb(255, 255, 255);'
                     'border-radius:10px;')
             else:
-                self.generatePasswordButton.setStyleSheet(
+                self.generate_password_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientOlivePurple +
                     'color: rgb(255, 255, 255);'
@@ -634,43 +633,43 @@ class RegisterScreenClass(GUIScreenClass):
 
     def password_show_handler(self) -> None:
         if self.is_password_hidden():
-            self.passwordLineEdit.setEchoMode(QLineEdit.Normal)
+            self.password_line_edit.setEchoMode(QLineEdit.Normal)
         else:
-            self.passwordLineEdit.setEchoMode(QLineEdit.Password)
+            self.password_line_edit.setEchoMode(QLineEdit.Password)
 
     def is_password_hidden(self) -> bool:
-        return self.passwordLineEdit.echoMode() == QLineEdit.Password
+        return self.password_line_edit.echoMode() == QLineEdit.Password
 
     def password_generator_handler(self) -> None:
-        if self.passwordGeneratorContainer.isVisible():
-            self.passwordGeneratorContainer.hide()
+        if self.password_generator_container.isVisible():
+            self.password_generator_container.hide()
         else:
-            self.passwordGeneratorContainer.show()
+            self.password_generator_container.show()
 
     def generate_password(self) -> None:
-        if not self.passwordLengthLineEdit.text():
-            self.passwordLengthLineEdit.setText('6')
+        if not self.password_length_line_edit.text():
+            self.password_length_line_edit.setText('6')
 
-        include_uppercase = self.upperCaseCheckBox.isChecked()
-        include_numbers = self.numbersCheckBox.isChecked()
-        include_symbols = self.symbolsCheckBox.isChecked()
-        length = int(self.passwordLengthLineEdit.text())
+        include_uppercase = self.upper_case_check_box.isChecked()
+        include_numbers = self.numbers_check_box.isChecked()
+        include_symbols = self.symbols_check_box.isChecked()
+        length = int(self.password_length_line_edit.text())
         if length < 6:
             length = 6
-            self.passwordLengthLineEdit.setText('6')
+            self.password_length_line_edit.setText('6')
         elif length > 32:
             length = 32
-            self.passwordLengthLineEdit.setText('32')
-        self.passwordLineEdit.setText(_generate_password(length, include_uppercase, include_numbers, include_symbols))
-        self.passwordGeneratorContainer.hide()
+            self.password_length_line_edit.setText('32')
+        self.password_line_edit.setText(_generate_password(length, include_uppercase, include_numbers, include_symbols))
+        self.password_generator_container.hide()
         if self.is_password_hidden():
-            self.passwordLineEdit.setEchoMode(QLineEdit.Normal)
+            self.password_line_edit.setEchoMode(QLineEdit.Normal)
 
     def back_sign_in_handler(self) -> None:
-        self.open_other_window(LoginScreenClass, close_current=True)
+        self.open_other_window(SignInScreenClass, close_current=True)
 
     def scan_handler(self) -> None:
-        if self.scanButtonClickBlock:
+        if self.scan_buttonClickBlock:
             return
         self.this_window.setEnabled(False)
         self.scan_number += 1
@@ -686,27 +685,27 @@ class RegisterScreenClass(GUIScreenClass):
 
     def scan_callback_after_scanning(self, roi_gray: np.ndarray):
         self.this_window.setEnabled(True)
-        global shared_Register_FaceScanning_image_valid
-        if shared_Register_FaceScanning_image_valid:
-            shared_Register_FaceScanning_image_valid = False
+        global shared_SignUp_FaceScanning_image_valid
+        if shared_SignUp_FaceScanning_image_valid:
+            shared_SignUp_FaceScanning_image_valid = False
             self.successful_scans += (roi_gray,)
             if self.scan_number == 3:
-                self.scanButtonClickBlock = True
-                self.scanButton.setText('Scan My Face (3 Times): 0 Remaining')
+                self.scan_buttonClickBlock = True
+                self.scan_button.setText('Scan My Face (3 Times): 0 Remaining')
                 self.remove_message()
                 self.change_message('Your Face has been Scanned Successfully')
                 self.add_message(Icon.Green_V)
             else:
-                self.scanButton.setText(f'Scan My Face (3 Times): {3 - self.scan_number} Remaining')
+                self.scan_button.setText(f'Scan My Face (3 Times): {3 - self.scan_number} Remaining')
         else:
             self.scan_number -= 1
 
-    def register_handler(self) -> None:
+    def sign_up_handler(self) -> None:
 
-        if not self.scanButtonClickBlock:
+        if not self.scan_buttonClickBlock:
             return
-        email = self.emailLineEdit.text()
-        password = self.passwordLineEdit.text()
+        email = self.email_line_edit.text()
+        password = self.password_line_edit.text()
         if not is_valid_email(email):
             self.remove_message()
             self.change_message('Email Bad Format')
@@ -717,7 +716,7 @@ class RegisterScreenClass(GUIScreenClass):
             self.change_message('Password Have to Include 6-32 Characters')
             self.add_message(Icon.Red_X)
             return
-        result = external.ext_register_handler(email, password, self.successful_scans)
+        result = external.ext_sign_up_handler(email, password, self.successful_scans)
         if result == OperationResultType.SUCCEEDED:
             self.remove_message()
             self.open_other_window(CompressScreenClass, close_current=True)
@@ -739,12 +738,12 @@ class RegisterScreenClass(GUIScreenClass):
         self.message_label.show()
 
     def buttons_arrangement_with_message(self):
-        self.scanButton.setGeometry(QRect(230, 320, 500, 40))
-        self.registerButton.setGeometry(QRect(380, 390, 200, 40))
+        self.scan_button.setGeometry(QRect(230, 320, 500, 40))
+        self.sign_up_button.setGeometry(QRect(380, 390, 200, 40))
 
     def buttons_arrangement_without_message(self):
-        self.scanButton.setGeometry(QRect(230, 340, 500, 40))
-        self.registerButton.setGeometry(QRect(380, 410, 200, 40))
+        self.scan_button.setGeometry(QRect(230, 340, 500, 40))
+        self.sign_up_button.setGeometry(QRect(380, 410, 200, 40))
 
     def change_message(self, new_error_msg: str):
         self.message_label.setText(new_error_msg)
@@ -780,63 +779,63 @@ class CompressScreenClass(GUIScreenClass):
             'background-image: url();'
             'border-image: url(:/backs/logout.png);')
 
-        self.decompressButton = QPushButton(self.central_widget)
-        self.decompressButton.setObjectName('decompressButton')
-        self.decompressButton.setGeometry(QRect(95, 110, 290, 80))
+        self.decompress_button = QPushButton(self.central_widget)
+        self.decompress_button.setObjectName('decompress_button')
+        self.decompress_button.setGeometry(QRect(95, 110, 290, 80))
         font = CompressScreenClass.create_font('Gadugi', 18, True)
-        self.decompressButton.setFont(font)
-        self.decompressButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.decompressButton.pressed.connect(
+        self.decompress_button.setFont(font)
+        self.decompress_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.decompress_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.Decompress, EventType.Pressed))
-        self.decompressButton.released.connect(
+        self.decompress_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.Decompress, EventType.Released))
-        self.decompressButton.clicked.connect(self.decompress_handler)
-        self.decompressButton.setStyleSheet(
+        self.decompress_button.clicked.connect(self.decompress_handler)
+        self.decompress_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientInvertBlue +
             'color: rgb(255, 255, 255);'
             'border-radius:20px;')
 
-        self.compressButton = QPushButton(self.central_widget)
-        self.compressButton.setObjectName('decompressButton')
-        self.compressButton.setGeometry(QRect(575, 110, 290, 80))
+        self.compress_button = QPushButton(self.central_widget)
+        self.compress_button.setObjectName('compress_button')
+        self.compress_button.setGeometry(QRect(575, 110, 290, 80))
         font = CompressScreenClass.create_font('Gadugi', 18, True)
-        self.compressButton.setFont(font)
-        self.compressButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.compressButton.pressed.connect(
+        self.compress_button.setFont(font)
+        self.compress_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.compress_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.Compress, EventType.Pressed))
-        self.compressButton.released.connect(
+        self.compress_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.Compress, EventType.Released))
-        self.compressButton.clicked.connect(self.compress_handler)
-        self.compressButton.setStyleSheet(
+        self.compress_button.clicked.connect(self.compress_handler)
+        self.compress_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientBlue +
             'color: rgb(255, 255, 255);'
             'border-radius:20px;')
 
-        self.unlockButton = QPushButton(self.central_widget)
-        self.unlockButton.setObjectName('unlockButton')
-        self.unlockButton.setGeometry(QRect(142, 220, 196, 210))
-        self.unlockButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.unlockButton.pressed.connect(
+        self.unlock_button = QPushButton(self.central_widget)
+        self.unlock_button.setObjectName('unlock_button')
+        self.unlock_button.setGeometry(QRect(142, 220, 196, 210))
+        self.unlock_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.unlock_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.Decompress, EventType.Pressed))
-        self.unlockButton.released.connect(
+        self.unlock_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.Decompress, EventType.Released))
-        self.unlockButton.clicked.connect(self.decompress_handler)
-        self.unlockButton.setStyleSheet(
+        self.unlock_button.clicked.connect(self.decompress_handler)
+        self.unlock_button.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/locks/unlock.png);')
 
-        self.lockButton = QPushButton(self.central_widget)
-        self.lockButton.setObjectName('lockButton')
-        self.lockButton.setGeometry(QRect(652, 220, 136, 210))
-        self.lockButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.lockButton.pressed.connect(
+        self.lock_button = QPushButton(self.central_widget)
+        self.lock_button.setObjectName('lock_button')
+        self.lock_button.setGeometry(QRect(652, 220, 136, 210))
+        self.lock_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.lock_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.Compress, EventType.Pressed))
-        self.lockButton.released.connect(
+        self.lock_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.Compress, EventType.Released))
-        self.lockButton.clicked.connect(self.compress_handler)
-        self.lockButton.setStyleSheet(
+        self.lock_button.clicked.connect(self.compress_handler)
+        self.lock_button.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/locks/lock.png);')
 
@@ -859,7 +858,7 @@ class CompressScreenClass(GUIScreenClass):
         self.message_label = QLabel(self.central_widget)
         self.message_label.setObjectName('message_label')
         self.message_label.setGeometry(QRect(0, 440, 960, 40))
-        font = RegisterScreenClass.create_font('Gadugi', 24, True)
+        font = SignUpScreenClass.create_font('Gadugi', 24, True)
         self.message_label.setFont(font)
         self.message_label.setAlignment(Qt.AlignCenter)
         self.message_label.setStyleSheet(
@@ -870,8 +869,8 @@ class CompressScreenClass(GUIScreenClass):
         CompressWindow.setCentralWidget(self.central_widget)
 
         CompressWindow.setWindowTitle(QCoreApplication.translate('CompressWindow', 'FZIP Locker', None))
-        self.decompressButton.setText(QCoreApplication.translate('CompressWindow', 'Decompress', None))
-        self.compressButton.setText(QCoreApplication.translate('CompressWindow', 'Compress', None))
+        self.decompress_button.setText(QCoreApplication.translate('CompressWindow', 'Decompress', None))
+        self.compress_button.setText(QCoreApplication.translate('CompressWindow', 'Compress', None))
         self.message_label.setText(QCoreApplication.translate('CompressWindow', '', None))
 
         self.paths = {}
@@ -881,38 +880,38 @@ class CompressScreenClass(GUIScreenClass):
     def change_pressed_button_style(self, button_type: ButtonType, event_type: EventType) -> None:
         if event_type == EventType.Pressed:
             if button_type == ButtonType.Decompress:
-                self.unlockButton.setStyleSheet(
+                self.unlock_button.setStyleSheet(
                     'background-image: url();'
                     'border-image: url(:/locks/unlock_clicked.png);')
-                self.decompressButton.setStyleSheet(
+                self.decompress_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientInvertBlueReducedOpacity +
                     'color: rgb(255, 255, 255);'
                     'border-radius:20px;')
             else:
-                self.lockButton.setStyleSheet(
+                self.lock_button.setStyleSheet(
                     'background-image: url();'
                     'border-image: url(:/locks/lock_clicked.png);')
-                self.compressButton.setStyleSheet(
+                self.compress_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientBlueReducedOpacity +
                     'color: rgb(255, 255, 255);'
                     'border-radius:20px;')
         else:
             if button_type == ButtonType.Decompress:
-                self.unlockButton.setStyleSheet(
+                self.unlock_button.setStyleSheet(
                     'background-image: url();'
                     'border-image: url(:/locks/unlock.png);')
-                self.decompressButton.setStyleSheet(
+                self.decompress_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientInvertBlue +
                     'color: rgb(255, 255, 255);'
                     'border-radius:20px;')
             else:
-                self.lockButton.setStyleSheet(
+                self.lock_button.setStyleSheet(
                     'background-image: url();'
                     'border-image: url(:/locks/lock.png);')
-                self.compressButton.setStyleSheet(
+                self.compress_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientBlue +
                     'color: rgb(255, 255, 255);'
@@ -920,9 +919,10 @@ class CompressScreenClass(GUIScreenClass):
 
     def logout_handler(self):
         external.ext_logout_handler()
-        self.open_other_window(LoginScreenClass, close_current=True)
+        self.open_other_window(SignInScreenClass, close_current=True)
 
     def decompress_handler(self) -> None:
+        self.remove_message()
         self.this_window.setEnabled(False)
         operation_result, path = external.ext_decompress_handler_select_lock_file()
         self.this_window.setEnabled(True)
@@ -1002,6 +1002,7 @@ class CompressScreenClass(GUIScreenClass):
             self.add_message(Icon.Red_X)
 
     def compress_handler(self) -> None:
+        self.remove_message()
         self.this_window.setEnabled(False)
         operation_result, paths = external.ext_compress_handler_select_compress_files()
         self.this_window.setEnabled(True)
@@ -1106,35 +1107,35 @@ class FaceScanningScreenClass(GUIScreenClass):
         self.img_label.setStyleSheet(
             'background-image: url();')
 
-        self.noButton = QPushButton(self.central_widget)
-        self.noButton.setObjectName('noButton')
-        self.noButton.setGeometry(QRect(145, 430, 190, 60))
+        self.no_button = QPushButton(self.central_widget)
+        self.no_button.setObjectName('no_button')
+        self.no_button.setGeometry(QRect(145, 430, 190, 60))
         font = FaceScanningScreenClass.create_font('Gadugi', 18, True)
-        self.noButton.setFont(font)
-        self.noButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.noButton.pressed.connect(
+        self.no_button.setFont(font)
+        self.no_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.no_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.NO, EventType.Pressed))
-        self.noButton.released.connect(
+        self.no_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.NO, EventType.Released))
-        self.noButton.clicked.connect(self.no_handler)
-        self.noButton.setStyleSheet(
+        self.no_button.clicked.connect(self.no_handler)
+        self.no_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientDarkRed +
             'color: rgb(255, 255, 255);'
             'border-radius:20px;')
 
-        self.yesButton = QPushButton(self.central_widget)
-        self.yesButton.setObjectName('yesButton')
-        self.yesButton.setGeometry(QRect(625, 430, 190, 60))
+        self.yes_button = QPushButton(self.central_widget)
+        self.yes_button.setObjectName('yes_button')
+        self.yes_button.setGeometry(QRect(625, 430, 190, 60))
         font = FaceScanningScreenClass.create_font('Gadugi', 18, True)
-        self.yesButton.setFont(font)
-        self.yesButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.yesButton.pressed.connect(
+        self.yes_button.setFont(font)
+        self.yes_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.yes_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.YES, EventType.Pressed))
-        self.yesButton.released.connect(
+        self.yes_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.YES, EventType.Released))
-        self.yesButton.clicked.connect(self.yes_handler)
-        self.yesButton.setStyleSheet(
+        self.yes_button.clicked.connect(self.yes_handler)
+        self.yes_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientDarkGreen +
             'color: rgb(255, 255, 255);'
@@ -1154,57 +1155,57 @@ class FaceScanningScreenClass(GUIScreenClass):
         FaceScanningWindow.setWindowTitle(QCoreApplication.translate('FaceScanningWindow', 'FZIP Locker', None))
         self.title_label.setText(QCoreApplication.translate(
             'FaceScanningWindow', title, None))
-        self.noButton.setText(QCoreApplication.translate('FaceScanningWindow', 'No', None))
-        self.yesButton.setText(QCoreApplication.translate('FaceScanningWindow', 'Yes', None))
+        self.no_button.setText(QCoreApplication.translate('FaceScanningWindow', 'No', None))
+        self.yes_button.setText(QCoreApplication.translate('FaceScanningWindow', 'Yes', None))
 
         QMetaObject.connectSlotsByName(FaceScanningWindow)
 
     def change_pressed_button_style(self, button_type: ButtonType, event_type: EventType) -> None:
         if event_type == EventType.Pressed:
             if button_type == ButtonType.NO:
-                self.noButton.setStyleSheet(
+                self.no_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientBrightRed +
                     'color: rgb(255, 255, 255);'
                     'border-radius:20px;')
             else:
-                self.yesButton.setStyleSheet(
+                self.yes_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientBrightGreen +
                     'color: rgb(255, 255, 255);'
                     'border-radius:20px;')
         else:
             if button_type == ButtonType.NO:
-                self.noButton.setStyleSheet(
+                self.no_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientDarkRed +
                     'color: rgb(255, 255, 255);'
                     'border-radius:20px;')
             else:
-                self.yesButton.setStyleSheet(
+                self.yes_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientDarkGreen +
                     'color: rgb(255, 255, 255);'
                     'border-radius:20px;')
 
     def no_handler(self) -> None:
-        global shared_Register_FaceScanning_image_valid, shared_Compress_FaceScanning_image_valid
-        shared_Register_FaceScanning_image_valid = False
+        global shared_SignUp_FaceScanning_image_valid, shared_Compress_FaceScanning_image_valid
+        shared_SignUp_FaceScanning_image_valid = False
         shared_Compress_FaceScanning_image_valid = False
         self.close_by_X = False
         self.this_window.close()
 
     def yes_handler(self) -> None:
-        global shared_Register_FaceScanning_image_valid, shared_Compress_FaceScanning_image_valid
-        shared_Register_FaceScanning_image_valid = True
+        global shared_SignUp_FaceScanning_image_valid, shared_Compress_FaceScanning_image_valid
+        shared_SignUp_FaceScanning_image_valid = True
         shared_Compress_FaceScanning_image_valid = True
         self.close_by_X = False
         self.this_window.close()
 
     def close_event(self, event):
         if self.close_by_X:
-            global shared_Register_FaceScanning_image_valid, shared_Compress_FaceScanning_image_valid
-            shared_Register_FaceScanning_image_valid = False
+            global shared_SignUp_FaceScanning_image_valid, shared_Compress_FaceScanning_image_valid
+            shared_SignUp_FaceScanning_image_valid = False
             shared_Compress_FaceScanning_image_valid = False
         if self.callback_func:
             self.callback_func()
@@ -1235,150 +1236,150 @@ class PasswordScreenClass(GUIScreenClass):
             'background-image: url();'
             'color: rgb(255, 255, 255);')
 
-        self.zip_label_left = QLabel(self.central_widget)
-        self.zip_label_left.setObjectName('zip_label_left')
-        self.zip_label_left.setGeometry(QRect(-40, 25, 151, 220))
-        self.zip_label_left.setStyleSheet(
+        self.zip_left_label = QLabel(self.central_widget)
+        self.zip_left_label.setObjectName('zip_left_label')
+        self.zip_left_label.setGeometry(QRect(-40, 25, 151, 220))
+        self.zip_left_label.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/zip_image/zip_image.png);')
 
-        self.zip_label_right = QLabel(self.central_widget)
-        self.zip_label_right.setObjectName('zip_label_right')
-        self.zip_label_right.setGeometry(QRect(370, 25, 151, 220))
-        self.zip_label_right.setStyleSheet(
+        self.zip_right_label = QLabel(self.central_widget)
+        self.zip_right_label.setObjectName('zip_right_label')
+        self.zip_right_label.setGeometry(QRect(370, 25, 151, 220))
+        self.zip_right_label.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/zip_image/zip_image.png);')
 
-        self.submitButton = QPushButton(self.central_widget)
-        self.submitButton.setObjectName('submitButton')
-        self.submitButton.setGeometry(QRect(160, 180, 160, 40))
+        self.submit_button = QPushButton(self.central_widget)
+        self.submit_button.setObjectName('submit_button')
+        self.submit_button.setGeometry(QRect(160, 180, 160, 40))
         font = FaceScanningScreenClass.create_font('Gadugi', 18, True)
-        self.submitButton.setFont(font)
-        self.submitButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.submitButton.pressed.connect(
+        self.submit_button.setFont(font)
+        self.submit_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.submit_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.Submit, EventType.Pressed))
-        self.submitButton.released.connect(
+        self.submit_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.Submit, EventType.Released))
-        self.submitButton.clicked.connect(self.submit_handler)
-        self.submitButton.setStyleSheet(
+        self.submit_button.clicked.connect(self.submit_handler)
+        self.submit_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientBlue +
             'color: rgb(255, 255, 255);'
             'border-radius:20px;')
 
-        self.passwordLineEdit = QLineEdit(self.central_widget)
-        self.passwordLineEdit.setObjectName('passwordLineEdit')
-        self.passwordLineEdit.setGeometry(QRect(60, 100, 360, 53))
-        font = RegisterScreenClass.create_font('Gadugi', 15, True)
-        self.passwordLineEdit.setFont(font)
-        self.passwordLineEdit.setEchoMode(QLineEdit.Password)
-        self.passwordLineEdit.setStyleSheet(
+        self.password_line_edit = QLineEdit(self.central_widget)
+        self.password_line_edit.setObjectName('password_line_edit')
+        self.password_line_edit.setGeometry(QRect(60, 100, 360, 53))
+        font = SignUpScreenClass.create_font('Gadugi', 15, True)
+        self.password_line_edit.setFont(font)
+        self.password_line_edit.setEchoMode(QLineEdit.Password)
+        self.password_line_edit.setStyleSheet(
             'background-image: url();'
             'background-color: rgba(0, 0, 0, 0);'
             'border: 1px solid black;'
             'color: rgb(255, 255, 255);')
 
-        self.passwordShowButton = QPushButton(self.central_widget)
-        self.passwordShowButton.setObjectName('passwordShowButton')
-        self.passwordShowButton.setGeometry(QRect(388, 120, 27, 16))
-        self.passwordShowButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.passwordShowButton.clicked.connect(self.password_show_handler)
-        self.passwordShowButton.setStyleSheet(
+        self.password_show_button = QPushButton(self.central_widget)
+        self.password_show_button.setObjectName('password_show_button')
+        self.password_show_button.setGeometry(QRect(388, 120, 27, 16))
+        self.password_show_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.password_show_button.clicked.connect(self.password_show_handler)
+        self.password_show_button.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/eye/eye.png);')
-        self.passwordGeneratorKey = QPushButton(self.central_widget)
-        self.passwordGeneratorKey.setObjectName('passwordGeneratorKey')
-        self.passwordGeneratorKey.setGeometry(QRect(362, 118, 21, 20))
-        self.passwordGeneratorKey.setCursor(QCursor(Qt.PointingHandCursor))
-        self.passwordGeneratorKey.clicked.connect(self.password_generator_handler)
-        self.passwordGeneratorKey.setStyleSheet(
+        self.password_generator_key = QPushButton(self.central_widget)
+        self.password_generator_key.setObjectName('password_generator_key')
+        self.password_generator_key.setGeometry(QRect(362, 118, 21, 20))
+        self.password_generator_key.setCursor(QCursor(Qt.PointingHandCursor))
+        self.password_generator_key.clicked.connect(self.password_generator_handler)
+        self.password_generator_key.setStyleSheet(
             'background-image: url();'
             'border-image: url(:/password_generator_key/password_generator.png);')
 
-        self.passwordGeneratorContainer = QWidget(self.central_widget)
-        self.passwordGeneratorContainer.setObjectName('passwordGeneratorContainer')
-        self.passwordGeneratorContainer.setGeometry(QRect(296, 140, 180, 130))
-        self.passwordGeneratorContainer.setStyleSheet(
+        self.password_generator_container = QWidget(self.central_widget)
+        self.password_generator_container.setObjectName('password_generator_container')
+        self.password_generator_container.setGeometry(QRect(296, 140, 180, 130))
+        self.password_generator_container.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientTransparentWhite +
             'border-radius: 10px')
-        self.passwordGeneratorContainer.hide()
+        self.password_generator_container.hide()
 
-        self.passwordLengthLabel = QLabel(self.passwordGeneratorContainer)
-        self.passwordLengthLabel.setObjectName('passwordLengthLabel')
-        self.passwordLengthLabel.setGeometry(QRect(10, 5, 95, 17))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.passwordLengthLabel.setFont(font)
-        self.passwordLengthLabel.setStyleSheet('background-color: rgb();')
+        self.password_length_label = QLabel(self.password_generator_container)
+        self.password_length_label.setObjectName('password_length_label')
+        self.password_length_label.setGeometry(QRect(10, 5, 95, 17))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.password_length_label.setFont(font)
+        self.password_length_label.setStyleSheet('background-color: rgb();')
 
-        self.passwordLengthLineEdit = QLineEdit(self.passwordGeneratorContainer)
-        self.passwordLengthLineEdit.setObjectName('passwordLengthLineEdit')
-        self.passwordLengthLineEdit.setGeometry(QRect(102, 4, 25, 20))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.passwordLengthLineEdit.setFont(font)
-        self.passwordLengthLineEdit.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        self.passwordLengthLineEdit.setStyleSheet(
+        self.password_length_line_edit = QLineEdit(self.password_generator_container)
+        self.password_length_line_edit.setObjectName('password_length_line_edit')
+        self.password_length_line_edit.setGeometry(QRect(102, 4, 25, 20))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.password_length_line_edit.setFont(font)
+        self.password_length_line_edit.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.password_length_line_edit.setStyleSheet(
             'border-style: solid;'
             'border-width: 2px;'
             'border-color: rgb(0, 0, 0);')
         validator = QIntValidator(1, 99)
-        self.passwordLengthLineEdit.setValidator(validator)
+        self.password_length_line_edit.setValidator(validator)
 
-        self.lowerCaseCheckBox = QCheckBox(self.passwordGeneratorContainer)
-        self.lowerCaseCheckBox.setObjectName('lowerCaseCheckBox')
-        self.lowerCaseCheckBox.setEnabled(False)
-        self.lowerCaseCheckBox.setGeometry(QRect(10, 25, 131, 17))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.lowerCaseCheckBox.setFont(font)
-        self.lowerCaseCheckBox.setStyleSheet('background-color: rgb();')
-        self.lowerCaseCheckBox.setChecked(True)
+        self.lower_case_check_box = QCheckBox(self.password_generator_container)
+        self.lower_case_check_box.setObjectName('lower_case_check_box')
+        self.lower_case_check_box.setEnabled(False)
+        self.lower_case_check_box.setGeometry(QRect(10, 25, 131, 17))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.lower_case_check_box.setFont(font)
+        self.lower_case_check_box.setStyleSheet('background-color: rgb();')
+        self.lower_case_check_box.setChecked(True)
 
-        self.upperCaseCheckBox = QCheckBox(self.passwordGeneratorContainer)
-        self.upperCaseCheckBox.setObjectName('upperCaseCheckBox')
-        self.upperCaseCheckBox.setEnabled(True)
-        self.upperCaseCheckBox.setGeometry(QRect(10, 45, 131, 17))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.upperCaseCheckBox.setFont(font)
-        self.upperCaseCheckBox.setStyleSheet('background-color: rgb();')
-        self.upperCaseCheckBox.setChecked(False)
+        self.upper_case_check_box = QCheckBox(self.password_generator_container)
+        self.upper_case_check_box.setObjectName('upper_case_check_box')
+        self.upper_case_check_box.setEnabled(True)
+        self.upper_case_check_box.setGeometry(QRect(10, 45, 131, 17))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.upper_case_check_box.setFont(font)
+        self.upper_case_check_box.setStyleSheet('background-color: rgb();')
+        self.upper_case_check_box.setChecked(False)
 
-        self.numbersCheckBox = QCheckBox(self.passwordGeneratorContainer)
-        self.numbersCheckBox.setObjectName('numbersCheckBox')
-        self.numbersCheckBox.setEnabled(True)
-        self.numbersCheckBox.setGeometry(QRect(10, 65, 131, 17))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.numbersCheckBox.setFont(font)
-        self.numbersCheckBox.setStyleSheet('background-color: rgb();')
-        self.numbersCheckBox.setChecked(False)
+        self.numbers_check_box = QCheckBox(self.password_generator_container)
+        self.numbers_check_box.setObjectName('numbers_check_box')
+        self.numbers_check_box.setEnabled(True)
+        self.numbers_check_box.setGeometry(QRect(10, 65, 131, 17))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.numbers_check_box.setFont(font)
+        self.numbers_check_box.setStyleSheet('background-color: rgb();')
+        self.numbers_check_box.setChecked(False)
 
-        self.symbolsCheckBox = QCheckBox(self.passwordGeneratorContainer)
-        self.symbolsCheckBox.setObjectName('symbolsCheckBox')
-        self.symbolsCheckBox.setEnabled(True)
-        self.symbolsCheckBox.setGeometry(QRect(10, 85, 131, 17))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.symbolsCheckBox.setFont(font)
-        self.symbolsCheckBox.setStyleSheet('background-color: rgb();')
-        self.symbolsCheckBox.setChecked(False)
+        self.symbols_check_box = QCheckBox(self.password_generator_container)
+        self.symbols_check_box.setObjectName('symbols_check_box')
+        self.symbols_check_box.setEnabled(True)
+        self.symbols_check_box.setGeometry(QRect(10, 85, 131, 17))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.symbols_check_box.setFont(font)
+        self.symbols_check_box.setStyleSheet('background-color: rgb();')
+        self.symbols_check_box.setChecked(False)
 
-        self.generatePasswordButton = QPushButton(self.passwordGeneratorContainer)
-        self.generatePasswordButton.setObjectName('generatePasswordButton')
-        self.generatePasswordButton.setGeometry(QRect(35, 105, 110, 20))
-        font = RegisterScreenClass.create_font('Gadugi', 8, True)
-        self.generatePasswordButton.setFont(font)
-        self.generatePasswordButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.generatePasswordButton.pressed.connect(
+        self.generate_password_button = QPushButton(self.password_generator_container)
+        self.generate_password_button.setObjectName('generate_password_button')
+        self.generate_password_button.setGeometry(QRect(35, 105, 110, 20))
+        font = SignUpScreenClass.create_font('Gadugi', 8, True)
+        self.generate_password_button.setFont(font)
+        self.generate_password_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.generate_password_button.pressed.connect(
             lambda: self.change_pressed_button_style(ButtonType.Generate_Password, EventType.Pressed))
-        self.generatePasswordButton.released.connect(
+        self.generate_password_button.released.connect(
             lambda: self.change_pressed_button_style(ButtonType.Generate_Password, EventType.Released))
-        self.generatePasswordButton.clicked.connect(self.generate_password)
-        self.generatePasswordButton.setStyleSheet(
+        self.generate_password_button.clicked.connect(self.generate_password)
+        self.generate_password_button.setStyleSheet(
             'background-image: url();'
             'background-color: ' + GradientOlivePurple +
             'color: rgb(255, 255, 255);'
             'border-radius:10px;')
 
         if not include_pwd_generator:
-            self.passwordGeneratorKey.hide()
+            self.password_generator_key.hide()
 
         self.this_window.closeEvent = self.close_event
 
@@ -1388,27 +1389,27 @@ class PasswordScreenClass(GUIScreenClass):
 
         PasswordWindow.setWindowTitle(QCoreApplication.translate('PasswordWindow', 'FZIP Locker', None))
         self.title_label.setText(QCoreApplication.translate('PasswordWindow', 'FZIP Locker', None))
-        self.submitButton.setText(QCoreApplication.translate('RegisterWindow', 'Submit', None))
-        self.passwordLineEdit.setPlaceholderText(QCoreApplication.translate('PasswordWindow', 'File Password', None))
-        self.passwordLengthLabel.setText(QCoreApplication.translate('PasswordWindow', 'Password Length', None))
-        self.lowerCaseCheckBox.setText(QCoreApplication.translate('PasswordWindow', 'Lower case included', None))
-        self.upperCaseCheckBox.setText(QCoreApplication.translate('PasswordWindow', 'Upper case included', None))
-        self.numbersCheckBox.setText(QCoreApplication.translate('PasswordWindow', 'Numbers included', None))
-        self.symbolsCheckBox.setText(QCoreApplication.translate('PasswordWindow', 'Symbols included', None))
-        self.generatePasswordButton.setText(QCoreApplication.translate('PasswordWindow', 'Generate Password', None))
+        self.submit_button.setText(QCoreApplication.translate('PasswordWindow', 'Submit', None))
+        self.password_line_edit.setPlaceholderText(QCoreApplication.translate('PasswordWindow', 'File Password', None))
+        self.password_length_label.setText(QCoreApplication.translate('PasswordWindow', 'Password Length', None))
+        self.lower_case_check_box.setText(QCoreApplication.translate('PasswordWindow', 'Lower case included', None))
+        self.upper_case_check_box.setText(QCoreApplication.translate('PasswordWindow', 'Upper case included', None))
+        self.numbers_check_box.setText(QCoreApplication.translate('PasswordWindow', 'Numbers included', None))
+        self.symbols_check_box.setText(QCoreApplication.translate('PasswordWindow', 'Symbols included', None))
+        self.generate_password_button.setText(QCoreApplication.translate('PasswordWindow', 'Generate Password', None))
 
         QMetaObject.connectSlotsByName(PasswordWindow)
 
     def change_pressed_button_style(self, button_type: ButtonType, event_type: EventType) -> None:
         if event_type == EventType.Pressed:
             if button_type == ButtonType.Submit:
-                self.submitButton.setStyleSheet(
+                self.submit_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientRed +
                     'color: rgb(255, 255, 255);'
                     'border-radius:20px;')
             else:
-                self.generatePasswordButton.setStyleSheet(
+                self.generate_password_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientRed +
                     'color: rgb(255, 255, 255);'
@@ -1416,13 +1417,13 @@ class PasswordScreenClass(GUIScreenClass):
 
         else:
             if button_type == ButtonType.Submit:
-                self.submitButton.setStyleSheet(
+                self.submit_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientBlue +
                     'color: rgb(255, 255, 255);'
                     'border-radius:20px;')
             else:
-                self.generatePasswordButton.setStyleSheet(
+                self.generate_password_button.setStyleSheet(
                     'background-image: url();'
                     'background-color: ' + GradientOlivePurple +
                     'color: rgb(255, 255, 255);'
@@ -1430,44 +1431,44 @@ class PasswordScreenClass(GUIScreenClass):
 
     def password_show_handler(self) -> None:
         if self.is_password_hidden():
-            self.passwordLineEdit.setEchoMode(QLineEdit.Normal)
+            self.password_line_edit.setEchoMode(QLineEdit.Normal)
         else:
-            self.passwordLineEdit.setEchoMode(QLineEdit.Password)
+            self.password_line_edit.setEchoMode(QLineEdit.Password)
 
     def is_password_hidden(self) -> bool:
-        return self.passwordLineEdit.echoMode() == QLineEdit.Password
+        return self.password_line_edit.echoMode() == QLineEdit.Password
 
     def password_generator_handler(self) -> None:
-        if self.passwordGeneratorContainer.isVisible():
-            self.passwordGeneratorContainer.hide()
+        if self.password_generator_container.isVisible():
+            self.password_generator_container.hide()
         else:
-            self.passwordGeneratorContainer.show()
+            self.password_generator_container.show()
 
     def generate_password(self) -> None:
-        if not self.passwordLengthLineEdit.text():
-            self.passwordLengthLineEdit.setText('6')
+        if not self.password_length_line_edit.text():
+            self.password_length_line_edit.setText('6')
 
-        include_uppercase = self.upperCaseCheckBox.isChecked()
-        include_numbers = self.numbersCheckBox.isChecked()
-        include_symbols = self.symbolsCheckBox.isChecked()
-        length = int(self.passwordLengthLineEdit.text())
+        include_uppercase = self.upper_case_check_box.isChecked()
+        include_numbers = self.numbers_check_box.isChecked()
+        include_symbols = self.symbols_check_box.isChecked()
+        length = int(self.password_length_line_edit.text())
         if length < 6:
             length = 6
-            self.passwordLengthLineEdit.setText('6')
+            self.password_length_line_edit.setText('6')
         elif length > 32:
             length = 32
-            self.passwordLengthLineEdit.setText('32')
-        self.passwordLineEdit.setText(_generate_password(length, include_uppercase, include_numbers, include_symbols))
-        self.passwordGeneratorContainer.hide()
+            self.password_length_line_edit.setText('32')
+        self.password_line_edit.setText(_generate_password(length, include_uppercase, include_numbers, include_symbols))
+        self.password_generator_container.hide()
         if self.is_password_hidden():
-            self.passwordLineEdit.setEchoMode(QLineEdit.Normal)
+            self.password_line_edit.setEchoMode(QLineEdit.Normal)
 
     def submit_handler(self) -> None:
-        password = self.passwordLineEdit.text()
+        password = self.password_line_edit.text()
         if not is_valid_password(password):
             return
         global shared_Compress_Password_zip_pwd
-        shared_Compress_Password_zip_pwd = self.passwordLineEdit.text()
+        shared_Compress_Password_zip_pwd = self.password_line_edit.text()
         self.close_by_X = False
         self.this_window.close()
 
@@ -1479,12 +1480,13 @@ class PasswordScreenClass(GUIScreenClass):
             self.callback_func()
 
 
-def run_window(WindowClass: type, image=None) -> None:
+def start_program() -> None:
     app = QtWidgets.QApplication([])
-    MainWindow = QtWidgets.QMainWindow()
-    if image is not None:
-        WindowClass(MainWindow, None, image)
-    else:
-        WindowClass(MainWindow, None)
-    MainWindow.show()
+    sign_in_window = QtWidgets.QMainWindow()
+    SignInScreenClass(sign_in_window, None)
+    sign_in_window.show()
     app.exec_()
+
+
+if __name__ == '__main__':
+    start_program()

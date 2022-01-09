@@ -48,7 +48,7 @@ def send_data(data: dict, datatype: SendingDatatype) -> OperationResultType:
         roi_3 = data.get('roi_3')
         if None in [email, encrypted_password, roi_3]:  # One of parameters was not provided
             return OperationResultType.UNKNOWN_ERROR
-        operation_result = server_external_handlers.ext_register_handler(email, encrypted_password, roi_3)
+        operation_result = server_external_handlers.ext_sign_up_handler(email, encrypted_password, roi_3)
         print('Sign up:', operation_result)
         return operation_result
 

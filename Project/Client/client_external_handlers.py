@@ -18,7 +18,7 @@ ENCRYPTOR = Encryptor(KEY)
 USER_EMAIL = ''
 
 
-# Login Screen - user sign in: authenticate the user in server side
+# Sign in Screen - user sign in: authenticate the user in server side
 def ext_sign_in_handler(email: str, password: str) -> OperationResultType:
     encrypted_password = ENCRYPTOR.encrypt_text(password)
     data = {'email': email,
@@ -30,8 +30,8 @@ def ext_sign_in_handler(email: str, password: str) -> OperationResultType:
     return operation_result
 
 
-# Register Screen - after three scans user sign up: add user to DB in server side
-def ext_register_handler(email: str, password: str,
+# Sign Up Screen - after three scans user sign up: add user to DB in server side
+def ext_sign_up_handler(email: str, password: str,
                          roi_3: Tuple[np.ndarray, np.ndarray, np.ndarray]) -> OperationResultType:
     encrypted_password = ENCRYPTOR.encrypt_text(password)
     roi_3_serialized = pickle.dumps(roi_3)

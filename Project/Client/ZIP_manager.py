@@ -105,3 +105,11 @@ class ZIPManager:
                 pass
 
             return OperationResultType.UNKNOWN_ERROR
+
+
+if __name__ == '__main__':
+    src = (r'C:\Users\Doriav Isakov\Desktop\aaa.txt', r'C:\Users\Doriav Isakov\Desktop\bbb.txt')
+    dest = r'C:\Users\Doriav Isakov\Desktop\mmm.zip'
+    pwd = 'abc123'
+    ZIPManager.compress(src, dest, pwd, delete_src=True)
+    # ZIPManager.decompress(dest, pwd, delete_path=True)
