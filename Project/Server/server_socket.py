@@ -2,7 +2,7 @@ import pickle
 import socket
 import threading
 
-from Common.operation_result import OperationResult
+from Common.operation_result import OperationResultType
 from Common.sending_datatypes import SendingDatatype
 from Server.db_manager import user_exists
 
@@ -10,7 +10,7 @@ LOCALHOST = "127.0.0.1"
 PORT = 1234
 
 
-def job(client_socket: socket.socket) -> OperationResult:
+def job(client_socket: socket.socket) -> OperationResultType:
     try:
         while True:
             pre_data = client_socket.recv(9).decode()
@@ -29,7 +29,7 @@ def job(client_socket: socket.socket) -> OperationResult:
                 if user_exists(email):
                     client_socket.send(b'0')
                     client_socket.close()
-                    return OperationResult.FAILED
+                    return OperationResultType.UNKNOWN_ERROR
                 client_socket.send(b'1')
 
             elif datatype == SendingDatatype.SignIn:
@@ -38,25 +38,25 @@ def job(client_socket: socket.socket) -> OperationResult:
                 if not user_exists(email):
                     client_socket.send(b'0')
                     client_socket.close()
-                    return OperationResult.FAILED
+                    return OperationResultType.UNKNOWN_ERROR
                 client_socket.send(b'1')
 
             elif datatype == SendingDatatype.ScanFaceImage:
                 if not user_exists(email):
                     client_socket.send(b'0')
                     client_socket.close()
-                    return OperationResult.FAILED
+                    return OperationResultType.UNKNOWN_ERROR
                 client_socket.send(b'1')
 
             else:
                 client_socket.send(b'0')
                 client_socket.close()
-                return OperationResult.FAILED
+                return OperationResultType.UNKNOWN_ERROR
 
         client_socket.close()
-        return OperationResult.SUCCEEDED
+        return OperationResultType.SUCCEEDED
     except:
-        return OperationResult.FAILED
+        return OperationResultType.UNKNOWN_ERROR
 
 
 def start_server_socket() -> None:
