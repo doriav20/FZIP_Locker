@@ -7,7 +7,8 @@ face_cascade = cv2.CascadeClassifier('./haarcascade_frontalface_alt2.xml')
 
 
 def detect_face() -> Tuple[np.ndarray, np.ndarray]:
-    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Remove Warning ~SourceReaderCB terminating async callback
     roi_gray = None
     roi_preview = None
     times = 0
