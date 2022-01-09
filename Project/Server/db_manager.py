@@ -15,7 +15,7 @@ db = cluster['users']
 collection = db['users']
 
 
-def register(email: str, password: str) -> OperationResultType:
+def sign_up(email: str, password: str) -> OperationResultType:
     try:
         creation_time = str(datetime.now())
         # Creating key depends on registration time - Importance is that each user has a different key
