@@ -1,5 +1,5 @@
 # FZIP_Locker
-Cyber Tichon Hadera Final Project
+Cyber Final Project
 
 Face Zip Locker
 
