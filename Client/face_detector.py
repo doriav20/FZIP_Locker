@@ -3,18 +3,24 @@ from typing import Tuple
 import numpy as np
 from cv2 import cv2
 
+from operation_result import OperationResultType
+
 face_cascade = cv2.CascadeClassifier('./haarcascade_frontalface_alt2.xml')
 
 
-def detect_face() -> Tuple[np.ndarray, np.ndarray]:
+def detect_face() -> Tuple[np.ndarray, np.ndarray, OperationResultType]:
     # cap = cv2.VideoCapture(0)
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Remove Warning ~SourceReaderCB terminating async callback
     roi_gray = None
     roi_preview = None
+    operation_result = OperationResultType.SUCCEEDED
     times = 0
     while times < 5:
         ret, frame = cap.read()
         if frame is None:
+            roi_gray = None
+            roi_preview = None
+            operation_result = OperationResultType.CONNECTION_ERROR
             break
         frame_h = frame.shape[0]
         frame_w = frame.shape[1]
@@ -31,10 +37,12 @@ def detect_face() -> Tuple[np.ndarray, np.ndarray]:
 
         cv2.imshow('Look at the camera', frame)
         if cv2.waitKey(20) == 27:
-            roi_gray, roi_preview = None, None
+            roi_gray = None
+            roi_preview = None
+            operation_result = OperationResultType.DETAILS_ERROR
             break
 
     cap.release()
     cv2.destroyAllWindows()
 
-    return roi_gray, roi_preview
+    return roi_gray, roi_preview, operation_result
