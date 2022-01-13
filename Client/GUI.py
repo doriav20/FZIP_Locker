@@ -67,6 +67,8 @@ class GUIScreenClass(AbstractBaseClass):
         self.this_window = Window
         self.callback_func = callback_func
 
+        self.this_window.closeEvent = self.close_event
+
     def open_other_window(self, other_window_type: type, close_current: bool, callback_func=None, **kwargs) -> None:
         self.other_window = QMainWindow()
         if other_window_type == FaceScanningScreenClass:
@@ -86,6 +88,10 @@ class GUIScreenClass(AbstractBaseClass):
     def change_pressed_button_style(self, button_type: ButtonType, event_type: EventType) -> None:
         raise NotImplementedError("change_pressed_button_style is an Abstract Method")
         # return None
+
+    def close_event(self, event) -> None:
+        if not self.this_window.isEnabled():
+            event.ignore()
 
     @staticmethod
     def create_font(font_name: str, size: int, bold: bool) -> QFont:
@@ -333,6 +339,9 @@ class SignInScreenClass(GUIScreenClass):
         self.buttons_arrangement_without_message()
         self.red_x_label.hide()
         self.message_label.hide()
+
+    def close_event(self, event) -> None:
+        super(SignInScreenClass, self).close_event(event)
 
 
 class SignUpScreenClass(GUIScreenClass):
@@ -675,12 +684,17 @@ class SignUpScreenClass(GUIScreenClass):
             return
         self.this_window.setEnabled(False)
         self.scan_number += 1
-        roi_gray, roi_preview = detect_face()
-        if roi_gray is None:
+        roi_gray, roi_preview, operation_result = detect_face()
+        if operation_result == OperationResultType.DETAILS_ERROR:
             self.this_window.setEnabled(True)
             self.scan_number -= 1
             self.remove_message()
-            self.change_message('No Camera Detected')
+            return
+        if operation_result == OperationResultType.CONNECTION_ERROR:
+            self.this_window.setEnabled(True)
+            self.scan_number -= 1
+            self.remove_message()
+            self.change_message('No Camera Detected / Used by Another Program')
             self.add_message(Icon.Red_X)
             return
         roi_gray, roi_preview = roi_gray.copy(), roi_preview.copy()
@@ -758,6 +772,9 @@ class SignUpScreenClass(GUIScreenClass):
         self.green_v_label.hide()
         self.red_x_label.hide()
         self.message_label.hide()
+
+    def close_event(self, event) -> None:
+        super(SignUpScreenClass, self).close_event(event)
 
 
 class CompressScreenClass(GUIScreenClass):
@@ -940,9 +957,14 @@ class CompressScreenClass(GUIScreenClass):
         self.paths['decompress_lock_file'] = path
         self.remove_message()
         self.this_window.setEnabled(False)
-        roi_gray, roi_preview = detect_face()
-        if roi_gray is None:
+        roi_gray, roi_preview, operation_result = detect_face()
+        if operation_result == OperationResultType.DETAILS_ERROR:
             self.this_window.setEnabled(True)
+            return
+        if operation_result == OperationResultType.CONNECTION_ERROR:
+            self.this_window.setEnabled(True)
+            self.change_message('No Camera Detected / Used by Another Program')
+            self.add_message(Icon.Red_X)
             return
         roi_gray, roi_preview = roi_gray.copy(), roi_preview.copy()
         self.open_other_window(FaceScanningScreenClass, close_current=False,
@@ -1075,6 +1097,9 @@ class CompressScreenClass(GUIScreenClass):
         self.red_x_label.hide()
         self.message_label.hide()
 
+    def close_event(self, event) -> None:
+        super(CompressScreenClass, self).close_event(event)
+
 
 class FaceScanningScreenClass(GUIScreenClass):
     def __init__(self, FaceScanningWindow: QMainWindow, callback_func: FunctionType,
@@ -1151,8 +1176,6 @@ class FaceScanningScreenClass(GUIScreenClass):
         else:
             title = f'Is This Your Face? - Scan number {scan_number}'
 
-        self.this_window.closeEvent = self.close_event
-
         self.close_by_X = True
 
         FaceScanningWindow.setCentralWidget(self.central_widget)
@@ -1208,6 +1231,7 @@ class FaceScanningScreenClass(GUIScreenClass):
         self.this_window.close()
 
     def close_event(self, event):
+        super(FaceScanningScreenClass, self).close_event(event)
         if self.close_by_X:
             global shared_SignUp_FaceScanning_image_valid, shared_Compress_FaceScanning_image_valid
             shared_SignUp_FaceScanning_image_valid = False
@@ -1386,8 +1410,6 @@ class PasswordScreenClass(GUIScreenClass):
         if not include_pwd_generator:
             self.password_generator_key.hide()
 
-        self.this_window.closeEvent = self.close_event
-
         self.close_by_X = True
 
         PasswordWindow.setCentralWidget(self.central_widget)
@@ -1478,6 +1500,7 @@ class PasswordScreenClass(GUIScreenClass):
         self.this_window.close()
 
     def close_event(self, event):
+        super(PasswordScreenClass, self).close_event(event)
         if self.close_by_X:
             global shared_Compress_Password_zip_pwd
             shared_Compress_Password_zip_pwd = ''
