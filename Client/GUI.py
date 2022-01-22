@@ -115,6 +115,9 @@ class SignInScreenClass(GUIScreenClass):
         SignInWindow.resize(960, 540)
         SignInWindow.setMinimumSize(QSize(960, 540))
         SignInWindow.setMaximumSize(QSize(960, 540))
+        icon = QIcon()
+        icon.addFile(':/icon/icon.png', QSize(), QIcon.Normal, QIcon.Off)
+        SignInWindow.setWindowIcon(icon)
 
         self.central_widget = QWidget(SignInWindow)
         self.central_widget.setObjectName('central_widget')
@@ -352,6 +355,9 @@ class SignUpScreenClass(GUIScreenClass):
         SignUpWindow.resize(960, 540)
         SignUpWindow.setMinimumSize(QSize(960, 540))
         SignUpWindow.setMaximumSize(QSize(960, 540))
+        icon = QIcon()
+        icon.addFile(':/icon/icon.png', QSize(), QIcon.Normal, QIcon.Off)
+        SignUpWindow.setWindowIcon(icon)
 
         self.central_widget = QWidget(SignUpWindow)
         self.central_widget.setObjectName('central_widget')
@@ -785,6 +791,9 @@ class CompressScreenClass(GUIScreenClass):
         CompressWindow.resize(960, 540)
         CompressWindow.setMinimumSize(QSize(960, 540))
         CompressWindow.setMaximumSize(QSize(960, 540))
+        icon = QIcon()
+        icon.addFile(':/icon/icon.png', QSize(), QIcon.Normal, QIcon.Off)
+        CompressWindow.setWindowIcon(icon)
 
         self.central_widget = QWidget(CompressWindow)
         self.central_widget.setObjectName('central_widget')
@@ -1110,6 +1119,9 @@ class FaceScanningScreenClass(GUIScreenClass):
         FaceScanningWindow.resize(960, 540)
         FaceScanningWindow.setMinimumSize(QSize(960, 540))
         FaceScanningWindow.setMaximumSize(QSize(960, 540))
+        icon = QIcon()
+        icon.addFile(':/icon/icon.png', QSize(), QIcon.Normal, QIcon.Off)
+        FaceScanningWindow.setWindowIcon(icon)
 
         self.central_widget = QWidget(FaceScanningWindow)
         self.central_widget.setObjectName('central_widget')
@@ -1248,6 +1260,9 @@ class PasswordScreenClass(GUIScreenClass):
         PasswordWindow.resize(480, 270)
         PasswordWindow.setMinimumSize(QSize(480, 270))
         PasswordWindow.setMaximumSize(QSize(480, 270))
+        icon = QIcon()
+        icon.addFile(':/icon/icon.png', QSize(), QIcon.Normal, QIcon.Off)
+        PasswordWindow.setWindowIcon(icon)
 
         self.central_widget = QWidget(PasswordWindow)
         self.central_widget.setObjectName('central_widget')
