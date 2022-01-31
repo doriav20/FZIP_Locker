@@ -12,7 +12,7 @@ HTML = '''
 <head>
     <style>
         table {
-            max-width: 420px;
+            max-width: 400px;
             width: 100%;
             border: 0;
             border-spacing: 0;
@@ -42,8 +42,9 @@ HTML = '''
         }
 
         img {
-            margin-top: 15px;
-            width: 60%;
+            margin-top: 20px;
+			margin-bottom: 10px;
+            width: 70%;
         }
     </style>
 </head>
@@ -59,7 +60,7 @@ HTML = '''
                 <br>
                 Now you can scan your face and start encrypting your files securely...
             </em>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Wikimedia-logo.png" alt="Logo" title="Logo">
+            <img src="https://i.ibb.co/bgScwNr/logo.png" alt="Logo" title="Logo">
         </td>
     </tr>
 </table>
