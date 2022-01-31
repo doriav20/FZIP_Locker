@@ -43,7 +43,7 @@ HTML = '''
 
         img {
             margin-top: 20px;
-			margin-bottom: 10px;
+            margin-bottom: 10px;
             width: 70%;
         }
     </style>
