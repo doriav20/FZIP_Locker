@@ -31,7 +31,6 @@ def sign_up(email: str, password: str) -> OperationResultType:
     except pymongo.errors.DuplicateKeyError:  # Email is already in use
         return OperationResultType.DETAILS_ERROR
     except pymongo.errors.ServerSelectionTimeoutError:
-        print('ggg')
         return OperationResultType.CONNECTION_ERROR
     except:  # pymongo.errors.DuplicateKeyError
         return OperationResultType.UNKNOWN_ERROR
