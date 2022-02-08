@@ -48,8 +48,6 @@ def conn_with_client(client_socket: socket.socket) -> None:
         if client_socket:
             client_socket.close()
     except:
-        import traceback
-        traceback.print_exc()
         try:
             if client_socket:
                 client_socket.close()
