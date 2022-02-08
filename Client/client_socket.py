@@ -47,34 +47,6 @@ def conn_with_server(data: bytes, datatype: SendingDatatype) -> OperationResultT
 
 
 def send_data(data: dict, datatype: SendingDatatype) -> OperationResultType:
-    # from Server import server_external_handlers
-    # if datatype == SendingDatatype.SignIn:
-    #     email = data.get('email')
-    #     encrypted_password = data.get('encrypted_password')
-    #     if None in [email, encrypted_password]:  # One of parameters was not provided
-    #         return OperationResultType.UNKNOWN_ERROR
-    #     operation_result = server_external_handlers.ext_sign_in_handler(email, encrypted_password)
-    #     print('Sign in:', operation_result)
-    #     return operation_result
-    #
-    # elif datatype == SendingDatatype.Registration:
-    #     email = data.get('email')
-    #     encrypted_password = data.get('encrypted_password')
-    #     roi_3 = data.get('roi_3')
-    #     if None in [email, encrypted_password, roi_3]:  # One of parameters was not provided
-    #         return OperationResultType.UNKNOWN_ERROR
-    #     operation_result = server_external_handlers.ext_sign_up_handler(email, encrypted_password, roi_3)
-    #     print('Sign up:', operation_result)
-    #     return operation_result
-    #
-    # elif datatype == SendingDatatype.ScanFaceImage:
-    #     email = data.get('email')
-    #     roi = data.get('roi')
-    #     if None in [email, roi]:  # One of parameters was not provided
-    #         return OperationResultType.UNKNOWN_ERROR
-    #     operation_result = server_external_handlers.ext_scan_image_handler(email, roi)
-    #     print('Scan Face:', operation_result)
-    #     return operation_result
     data_serialized = pickle.dumps(data)
     operation_result = conn_with_server(data_serialized, datatype)
     return operation_result
