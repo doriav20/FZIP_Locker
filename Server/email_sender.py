@@ -1,8 +1,8 @@
 import smtplib
 from email.message import EmailMessage
 
-USERNAME = 'faceziplocker'
-ADDRESS = 'faceziplocker@gmail.com'
+USERNAME = 'fziplockerproject'
+ADDRESS = 'fziplockerproject@gmail.com'
 PASSWORD = ''
 
 SUBJECT = "Welcome to FZIP Locker"
