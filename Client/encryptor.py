@@ -84,10 +84,3 @@ class Encryptor:
         with open(path, 'wb') as file:
             file.write(file_content)
         return path, prefix.decode()
-
-# if __name__ == '__main__':
-# from my_key import get_common_key
-#
-# enc = Encryptor(get_common_key())
-# enc.encrypt_and_save_file(r"C:\Users\Doriav Isakov\Desktop\mmm.zip", 'lck', delete_unencrypted_file=True)
-# enc.decrypt_and_save_file(r"C:\Users\Doriav Isakov\Desktop\mmm.lck", 'zip', delete_encrypted_file=True)
