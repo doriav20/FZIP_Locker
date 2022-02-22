@@ -4,7 +4,6 @@ from operation_result import OperationResultType
 from sending_datatypes import SendingDatatype
 import pickle
 
-MAX_MSG_LENGTH = 1024
 CLIENT_IP = '127.0.0.1'
 PORT = 1234
 
