@@ -7,7 +7,7 @@ import server_external_handlers as external
 from operation_result import OperationResultType
 from sending_datatypes import SendingDatatype
 
-LOCALHOST = '127.0.0.1'
+HOST_IP = '127.0.0.1'
 PORT = 1234
 
 
@@ -89,7 +89,7 @@ def start_server() -> None:
     server_socket = None
     try:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind((LOCALHOST, PORT))
+        server_socket.bind((HOST_IP, PORT))
         server_socket.listen(5)
         while True:
             client_socket, address = server_socket.accept()
