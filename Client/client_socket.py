@@ -4,7 +4,7 @@ from operation_result import OperationResultType
 from sending_datatypes import SendingDatatype
 import pickle
 
-CLIENT_IP = '127.0.0.1'
+HOST_IP = '127.0.0.1'
 PORT = 1234
 
 
@@ -12,7 +12,7 @@ def conn_with_server(data: bytes, datatype: SendingDatatype) -> OperationResultT
     client_socket = None
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((CLIENT_IP, PORT))
+        client_socket.connect((HOST_IP, PORT))
 
         client_socket.send(b'TDR')  # TDR - Transfer Data Request
         response = client_socket.recv(7)
