@@ -82,8 +82,6 @@ def ext_decompress_handler_decrypt_file(encrypted_path: str) -> Tuple[OperationR
         if USER_EMAIL != prefix:
             os.remove(path)
             return OperationResultType.DETAILS_ERROR, ''
-        # if os.path.exists(encrypted_path):
-        #     os.remove(encrypted_path)
         return OperationResultType.SUCCEEDED, path
     except:
         return OperationResultType.UNKNOWN_ERROR, ''
