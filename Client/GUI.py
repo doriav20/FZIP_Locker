@@ -1023,7 +1023,7 @@ class CompressScreenClass(GUIScreenClass):
             self.add_message(Icon.Red_X)
             return
         operation_result = external.ext_decompress_handler_extract_zip(
-            non_encrypted_path, shared_Compress_Password_zip_pwd, self.paths['decompress_lock_file'])
+            non_encrypted_path, shared_Compress_Password_zip_pwd)
         if operation_result == OperationResultType.SUCCEEDED:
             self.remove_message()
             self.change_message('Decompression Completed Successfully')
