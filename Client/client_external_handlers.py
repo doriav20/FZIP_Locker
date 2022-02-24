@@ -146,7 +146,7 @@ def ext_compress_handler_archive_zip(src: Tuple[str, ...], encrypted_path: str, 
 def ext_compress_handler_encrypt_file(encrypted_path: str) -> OperationResultType:
     try:
         path = encrypted_path[:-3] + 'zip'
-        encrypted_path = ENCRYPTOR.encrypt_and_save_file(path, 'lck', prefix=USER_EMAIL)
+        ENCRYPTOR.encrypt_and_save_file(path, 'lck', prefix=USER_EMAIL)
         if os.path.exists(path):
             os.remove(path)
         return OperationResultType.SUCCEEDED
