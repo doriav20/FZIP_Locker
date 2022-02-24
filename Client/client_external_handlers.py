@@ -88,7 +88,7 @@ def ext_decompress_handler_decrypt_file(encrypted_path: str) -> Tuple[OperationR
 
 
 # Compress Screen
-def ext_decompress_handler_extract_zip(path: str, password: str, encrypted_path: str) -> OperationResultType:
+def ext_decompress_handler_extract_zip(path: str, password: str) -> OperationResultType:
     operation_result = ZIPManager.decompress(path, password)
     try:
         if os.path.exists(path):
