@@ -95,9 +95,6 @@ def ext_decompress_handler_extract_zip(path: str, password: str, encrypted_path:
     try:
         if os.path.exists(path):
             os.remove(path)
-        # if operation_result == OperationResultType.SUCCEEDED:
-        #     if os.path.exists(encrypted_path):
-        #         os.remove(encrypted_path)
         return operation_result
     except:
         return OperationResultType.UNKNOWN_ERROR
@@ -142,13 +139,6 @@ def ext_compress_handler_archive_zip(src: Tuple[str, ...], encrypted_path: str, 
     dest = encrypted_path[:-3] + 'zip'
     operation_result = ZIPManager.compress(src, dest, password)
     try:
-        # if operation_result == OperationResultType.SUCCEEDED:
-        #     for path in src:
-        #         if os.path.exists(path):
-        #             if os.path.isdir(path):
-        #                 shutil.rmtree(path)
-        #             else:
-        #                 os.remove(path)
         return operation_result, dest
     except:
         return OperationResultType.UNKNOWN_ERROR, ''
