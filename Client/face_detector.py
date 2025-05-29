@@ -1,7 +1,7 @@
 from typing import Tuple
 
 import numpy as np
-from cv2 import cv2
+import cv2
 
 from operation_result import OperationResultType
 
