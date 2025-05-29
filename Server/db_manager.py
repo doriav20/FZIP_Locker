@@ -1,4 +1,6 @@
 import os
+import urllib.parse
+
 import pymongo.errors
 from pymongo import MongoClient
 from encryptor import Encryptor
@@ -7,9 +9,10 @@ from datetime import datetime
 
 from operation_result import OperationResultType
 
-db_password = ''
+username = urllib.parse.quote_plus('admin')
+db_password = urllib.parse.quote_plus('')
 
-cluster = MongoClient(f'mongodb+srv://admin:{db_password}@users.b79wk.mongodb.net',
+cluster = MongoClient(f'mongodb+srv://{username}:{db_password}@cluster0.04r8shb.mongodb.net',
                       serverSelectionTimeoutMS=15 * 1000)  # Timeout for each finding / updating
 db = cluster['users']
 collection = db['users']
