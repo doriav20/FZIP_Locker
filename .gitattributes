@@ -1,0 +1,16 @@
+# Normalise to LF in the repository. The project is developed on Windows but
+# every server file is executed inside a Linux container, where a stray CRLF
+# in a shell script or entrypoint fails with a confusing "not found" error.
+* text=auto eol=lf
+
+# Files that must keep LF even on checkout.
+*.sh          text eol=lf
+Dockerfile    text eol=lf
+*.yaml        text eol=lf
+*.yml         text eol=lf
+
+# Binary assets - never touch.
+*.png         binary
+*.jpg         binary
+*.onnx        binary
+*.lck         binary

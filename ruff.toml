@@ -1,0 +1,35 @@
+line-length = 100
+target-version = "py313"
+
+[lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "A",      # flake8-builtins
+    "C4",     # flake8-comprehensions
+    "DTZ",    # flake8-datetimez  (naive datetimes were a real bug in the 2022 code)
+    "T20",    # flake8-print
+    "PT",     # flake8-pytest-style
+    "RET",    # flake8-return
+    "SIM",    # flake8-simplify
+    "PTH",    # flake8-use-pathlib  (replaces the old os.path + '\\' string surgery)
+    "S",      # flake8-bandit
+    "RUF",
+]
+ignore = [
+    "S101",   # assert - used heavily and legitimately in tests
+]
+
+[lint.per-file-ignores]
+# Tests may hardcode passwords and use subprocess freely.
+"**/tests/**" = ["S105", "S106", "S108", "S311"]
+# Model-fetching scripts print progress by design.
+"server/scripts/*" = ["T20"]
+
+[lint.isort]
+known-first-party = ["fzip_server", "fzip_client"]

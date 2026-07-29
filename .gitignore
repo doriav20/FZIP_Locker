@@ -1,0 +1,58 @@
+# ---------------------------------------------------------------------------
+# Secrets & certificates
+#
+# The 2022 version of this project had no .gitignore, which is how a raw
+# AES-256 key (key.key) ended up permanently in git history. The `*.key`
+# rule below would have caught it. See docs/SECURITY.md.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+certs/
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+
+# Vault artifacts - never commit test archives
+*.lck
+
+# ML models (fetched at build time with pinned SHA-256 checksums)
+server/models/*.onnx
+client/src/fzip_client/assets/models/*.onnx
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+uv.lock
+
+# ---------------------------------------------------------------------------
+# Tooling caches
+# ---------------------------------------------------------------------------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+
+# ---------------------------------------------------------------------------
+# Editors & OS
+# ---------------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
