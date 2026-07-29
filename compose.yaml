@@ -1,0 +1,141 @@
+# FZIP Locker backend.
+#
+#     cp .env.example .env      # then fill in secrets (see README)
+#     docker compose up -d --build
+#
+# The desktop client is not a service here: it needs your webcam and a display,
+# neither of which a Linux container on Windows can reach. Run it with
+# `uv run fzip-client` - see the README.
+
+name: fzip-locker
+
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:?set MONGO_ROOT_USERNAME in .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set MONGO_ROOT_PASSWORD in .env}
+      MONGO_INITDB_DATABASE: ${FZIP_MONGO_DB:-fzip}
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME:?set MONGO_APP_USERNAME in .env}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?set MONGO_APP_PASSWORD in .env}
+      FZIP_MONGO_DB: ${FZIP_MONGO_DB:-fzip}
+    volumes:
+      - mongo-data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    # Deliberately no `ports:`. Mongo is reachable only from the private
+    # Compose network, never from the host or the LAN. Exposing 27017 is how
+    # most hobby Mongo instances end up in a ransom note.
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks: [backend]
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # Assembled here from the least-privilege credentials, so the app never
+      # sees the root account. authSource is the app database, matching where
+      # mongo-init.js created the user.
+      FZIP_MONGO_URI: >-
+        mongodb://${MONGO_APP_USERNAME}:${MONGO_APP_PASSWORD}@mongo:27017/${FZIP_MONGO_DB:-fzip}?authSource=${FZIP_MONGO_DB:-fzip}
+      FZIP_MONGO_DB: ${FZIP_MONGO_DB:-fzip}
+      FZIP_BIOMETRIC_KEY: ${FZIP_BIOMETRIC_KEY:?run scripts/gen_secrets.py and set this in .env}
+      FZIP_JWT_PRIVATE_KEY: ${FZIP_JWT_PRIVATE_KEY:?run scripts/gen_secrets.py and set this in .env}
+      FZIP_JWT_KEY_ID: ${FZIP_JWT_KEY_ID:-k1}
+      FZIP_ENV: ${FZIP_ENV:-development}
+      FZIP_LOG_LEVEL: ${FZIP_LOG_LEVEL:-INFO}
+      FZIP_ACCESS_TOKEN_TTL_SECONDS: ${FZIP_ACCESS_TOKEN_TTL_SECONDS:-900}
+      FZIP_REFRESH_TOKEN_TTL_SECONDS: ${FZIP_REFRESH_TOKEN_TTL_SECONDS:-2592000}
+      FZIP_FACE_CHALLENGE_TTL_SECONDS: ${FZIP_FACE_CHALLENGE_TTL_SECONDS:-60}
+      FZIP_FACE_TOKEN_TTL_SECONDS: ${FZIP_FACE_TOKEN_TTL_SECONDS:-120}
+      FZIP_FACE_MATCH_THRESHOLD: ${FZIP_FACE_MATCH_THRESHOLD:-0.363}
+      FZIP_FACE_LIVENESS_FRAMES: ${FZIP_FACE_LIVENESS_FRAMES:-5}
+      FZIP_LOGIN_MAX_ATTEMPTS: ${FZIP_LOGIN_MAX_ATTEMPTS:-6}
+      FZIP_LOGIN_LOCKOUT_SECONDS: ${FZIP_LOGIN_LOCKOUT_SECONDS:-900}
+      FZIP_SMTP_HOST: ${FZIP_SMTP_HOST:-mailpit}
+      FZIP_SMTP_PORT: ${FZIP_SMTP_PORT:-1025}
+      FZIP_SMTP_USERNAME: ${FZIP_SMTP_USERNAME:-}
+      FZIP_SMTP_PASSWORD: ${FZIP_SMTP_PASSWORD:-}
+      FZIP_SMTP_USE_TLS: ${FZIP_SMTP_USE_TLS:-false}
+      FZIP_SMTP_FROM: ${FZIP_SMTP_FROM:-noreply@fziplocker.local}
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    # Also no `ports:`. Caddy is the only way in, so TLS cannot be bypassed by
+    # hitting the API directly on 8000.
+    networks: [backend]
+    security_opt:
+      - no-new-privileges:true
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./server/src
+          target: /app/src
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "8443:8443"
+    environment:
+      CADDY_SITE: ${FZIP_SITE_ADDRESS:-localhost:8443}
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+      # The locally-generated root CA is exported here so the desktop client
+      # can trust it via FZIP_CA_BUNDLE instead of disabling verification.
+      # Gitignored; Docker creates the directory on first run.
+      - ./certs:/export
+    # Caddy mints its local CA lazily, on first TLS handshake, so the root
+    # certificate does not exist at startup. Wait for it, copy it out, then
+    # hand the process over to Caddy itself via exec so signals still work.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ROOT=/data/caddy/pki/authorities/local/root.crt
+        (
+          i=0
+          while [ ! -f "$$ROOT" ] && [ $$i -lt 120 ]; do sleep 1; i=$$((i+1)); done
+          if [ -f "$$ROOT" ]; then
+            cp "$$ROOT" /export/root.crt
+            echo "caddy: exported local root CA to ./certs/root.crt"
+          else
+            echo "caddy: WARNING root CA did not appear; ./certs/root.crt not written" >&2
+          fi
+        ) &
+        exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [backend]
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      # Web UI Fonly. SMTP (1025) stays on the private network.
+      - "8025:8025"
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    networks: [backend]
+
+volumes:
+  mongo-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  backend:
+    driver: bridge

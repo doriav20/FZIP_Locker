@@ -1,0 +1,38 @@
+# TLS termination for the API.
+#
+# `tls internal` makes Caddy mint its own local CA and issue a certificate for
+# localhost. This fixes the 2022 design's plaintext TCP without needing a
+# public domain or a real certificate authority. The root CA is copied to
+# ./certs/root.crt on the host so the desktop client can trust it explicitly
+# (FZIP_CA_BUNDLE) rather than disabling verification.
+
+{
+	admin off
+	auto_https disable_redirects
+}
+
+{$CADDY_SITE} {
+	tls internal
+
+	encode zstd gzip
+
+	# Face verification posts several JPEG frames at once.
+	request_body {
+		max_size 24MB
+	}
+
+	header {
+		# HSTS is deliberately omitted: pinning localhost to HTTPS in every
+		# browser profile on the machine causes more grief than it prevents
+		# for a service that is only ever reached over the loopback.
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		-Server
+	}
+
+	reverse_proxy api:8000 {
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
