@@ -117,9 +117,7 @@ class FaceEngine:
 
         for path in (detector_path, recognizer_path):
             if not path.exists():
-                raise FileNotFoundError(
-                    f"Missing model {path}. Run scripts/fetch_models.py."
-                )
+                raise FileNotFoundError(f"Missing model {path}. Run scripts/fetch_models.py.")
 
         self._detector = cv2.FaceDetectorYN.create(
             model=str(detector_path),
@@ -129,9 +127,7 @@ class FaceEngine:
             nms_threshold=0.3,
             top_k=5000,
         )
-        self._recognizer = cv2.FaceRecognizerSF.create(
-            model=str(recognizer_path), config=""
-        )
+        self._recognizer = cv2.FaceRecognizerSF.create(model=str(recognizer_path), config="")
         self.match_threshold = match_threshold
 
     # -- detection ---------------------------------------------------------
@@ -170,9 +166,7 @@ class FaceEngine:
 
         face = faces[0]
         if min(face.box[2], face.box[3]) < MIN_FACE_PIXELS:
-            raise NoFaceDetectedError(
-                "Your face is too small in frame. Move closer to the camera."
-            )
+            raise NoFaceDetectedError("Your face is too small in frame. Move closer to the camera.")
         return face
 
     # -- embedding ---------------------------------------------------------
@@ -203,9 +197,7 @@ class FaceEngine:
             return 0.0
         return float(np.dot(a, b) / denom)
 
-    def best_match(
-        self, probe: np.ndarray, enrolled: list[np.ndarray]
-    ) -> tuple[bool, float]:
+    def best_match(self, probe: np.ndarray, enrolled: list[np.ndarray]) -> tuple[bool, float]:
         """Compare against every enrolled template, returning the best score.
 
         Three templates are captured at enrolment, so a user whose appearance

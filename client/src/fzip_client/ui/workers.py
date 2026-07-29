@@ -10,13 +10,11 @@ back as a signal.
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal
 
 from ..errors import FzipError
-
-T = TypeVar("T")
 
 
 class _Signals(QObject):
@@ -24,14 +22,17 @@ class _Signals(QObject):
     failed = pyqtSignal(str, object)
 
 
-class Task(QRunnable, Generic[T]):
+class Task(QRunnable):
     """Runs ``fn`` on the thread pool and emits the outcome.
 
     ``failed`` carries both a display-ready message and the exception itself,
     so a caller that needs to branch on the specific error type still can.
+
+    Not generic: Qt signals carry ``object``, so the result type is erased the
+    moment it crosses the signal boundary anyway.
     """
 
-    def __init__(self, fn: Callable[[], T]) -> None:
+    def __init__(self, fn: Callable[[], Any]) -> None:
         super().__init__()
         self._fn = fn
         self.signals = _Signals()
@@ -49,7 +50,7 @@ class Task(QRunnable, Generic[T]):
             result = self._fn()
         except FzipError as exc:
             self.signals.failed.emit(exc.user_message, exc)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             # Unexpected failures still have to reach the UI. The old client
             # swallowed these in bare `except:` blocks, so a genuine bug was
             # indistinguishable from a wrong password.
@@ -64,7 +65,7 @@ def run_async(
     on_error: Callable[[str, Exception], None],
 ) -> None:
     """Submit ``fn`` to the global thread pool."""
-    task: Task[Any] = Task(fn)
+    task = Task(fn)
     task.signals.finished.connect(on_success)
     task.signals.failed.connect(on_error)
     QThreadPool.globalInstance().start(task)

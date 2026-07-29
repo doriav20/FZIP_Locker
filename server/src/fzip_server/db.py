@@ -68,31 +68,23 @@ class Database:
         )
         await self.db[REFRESH_TOKENS].create_indexes(
             [
-                IndexModel(
-                    [("token_hash", ASCENDING)], unique=True, name="uniq_token_hash"
-                ),
+                IndexModel([("token_hash", ASCENDING)], unique=True, name="uniq_token_hash"),
                 IndexModel([("user_id", ASCENDING)], name="by_user"),
                 IndexModel([("family_id", ASCENDING)], name="by_family"),
                 # Mongo removes expired rows on its own; no cleanup job needed.
-                IndexModel(
-                    [("expires_at", ASCENDING)], expireAfterSeconds=0, name="ttl_expiry"
-                ),
+                IndexModel([("expires_at", ASCENDING)], expireAfterSeconds=0, name="ttl_expiry"),
             ]
         )
         await self.db[FACE_CHALLENGES].create_indexes(
             [
                 IndexModel([("nonce", ASCENDING)], unique=True, name="uniq_nonce"),
-                IndexModel(
-                    [("expires_at", ASCENDING)], expireAfterSeconds=0, name="ttl_expiry"
-                ),
+                IndexModel([("expires_at", ASCENDING)], expireAfterSeconds=0, name="ttl_expiry"),
             ]
         )
         await self.db[RATE_LIMITS].create_indexes(
             [
                 IndexModel([("key", ASCENDING)], unique=True, name="uniq_key"),
-                IndexModel(
-                    [("expires_at", ASCENDING)], expireAfterSeconds=0, name="ttl_expiry"
-                ),
+                IndexModel([("expires_at", ASCENDING)], expireAfterSeconds=0, name="ttl_expiry"),
             ]
         )
         log.info("indexes_ensured")

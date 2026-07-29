@@ -44,9 +44,7 @@ MAX_FRAMES = 12
 
 
 @router.post("/challenge", response_model=ChallengeResponse)
-async def create_challenge(
-    user: CurrentUser, db: Db, settings: AppSettings
-) -> ChallengeResponse:
+async def create_challenge(user: CurrentUser, db: Db, settings: AppSettings) -> ChallengeResponse:
     if not user.get("embeddings"):
         raise NoEnrolledFaceError
 
@@ -130,8 +128,7 @@ async def verify(
         raise LivenessFailedError
 
     enrolled = [
-        open_embedding(settings.biometric_key_bytes, user["_id"], record)
-        for record in sealed
+        open_embedding(settings.biometric_key_bytes, user["_id"], record) for record in sealed
     ]
 
     best_score = 0.0
@@ -152,9 +149,7 @@ async def verify(
     log.info("face_verified", user_id=user["_id"], best_score=round(best_score, 4))
 
     return FaceVerifyResponse(
-        face_token=create_token(
-            settings, user["_id"], "face", settings.face_token_ttl_seconds
-        ),
+        face_token=create_token(settings, user["_id"], "face", settings.face_token_ttl_seconds),
         expires_in=settings.face_token_ttl_seconds,
         # Rounded to two places so repeated attempts cannot be used to
         # hill-climb toward the threshold.

@@ -18,6 +18,7 @@ Three deliberate departures from the 2022 implementation:
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
@@ -88,10 +89,8 @@ def burn_password_time(hasher: PasswordHasher) -> None:
     if stored is None:
         stored = hasher.hash(_DUMMY_PASSWORD)
         _dummy_hash_cache[key] = stored
-    try:
+    with contextlib.suppress(VerifyMismatchError, VerificationError, InvalidHashError):
         hasher.verify(stored, "wrong")
-    except (VerifyMismatchError, VerificationError, InvalidHashError):
-        pass
 
 
 # --------------------------------------------------------------------------
@@ -133,9 +132,7 @@ def create_token(
     )
 
 
-def decode_token(
-    settings: Settings, token: str, expected_type: TokenType
-) -> dict[str, Any]:
+def decode_token(settings: Settings, token: str, expected_type: TokenType) -> dict[str, Any]:
     try:
         payload: dict[str, Any] = jwt.decode(
             token,

@@ -1,8 +1,12 @@
-# syntax=docker/dockerfile:1.7
-#
 # Multi-stage build. The models are fetched in the builder so the runtime
 # image needs no network access, and the final stage runs as a non-root user
 # with no build toolchain present.
+#
+# No `# syntax=` directive on purpose: pinning an external frontend image makes
+# the build depend on resolving docker/dockerfile at build time, which fails in
+# networks that reach the registry only through a proxy. Everything used here
+# (cache mounts, multi-stage, --chown) is supported by BuildKit's built-in
+# frontend.
 
 # --------------------------------------------------------------------------
 # Stage 1: dependencies + models
@@ -30,7 +34,28 @@ COPY scripts/ ./scripts/
 RUN /opt/venv/bin/python scripts/fetch_models.py --dest /opt/models
 
 # --------------------------------------------------------------------------
-# Stage 2: runtime
+# Stage 2: test
+#
+# A separate target so the runtime image carries neither pytest nor the test
+# suite. Run it with:  docker compose run --rm tests
+# --------------------------------------------------------------------------
+FROM builder AS test
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    VIRTUAL_ENV=/opt/venv uv pip install -r pyproject.toml --extra dev
+
+COPY src/ ./src/
+COPY tests/ ./tests/
+
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH=/app/src \
+    PYTHONUNBUFFERED=1 \
+    FZIP_MODEL_DIR=/opt/models
+
+CMD ["pytest", "tests", "-q"]
+
+# --------------------------------------------------------------------------
+# Stage 3: runtime
 # --------------------------------------------------------------------------
 FROM python:3.13-slim AS runtime
 

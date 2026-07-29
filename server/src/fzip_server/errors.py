@@ -17,9 +17,16 @@ from typing import Any
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 
 PROBLEM_CONTENT_TYPE = "application/problem+json"
 _BASE_URI = "https://fziplocker.local/problems"
+
+#: Starlette renamed HTTP_422_UNPROCESSABLE_ENTITY to
+#: HTTP_422_UNPROCESSABLE_CONTENT (matching RFC 9110) and deprecated the old
+#: name. Using the literal keeps this working across both, without emitting a
+#: deprecation warning on new versions or breaking on older ones.
+UNPROCESSABLE_CONTENT = 422
 
 
 class ProblemError(Exception):
@@ -112,14 +119,14 @@ class EmailAlreadyRegisteredError(ProblemError):
 # Face verification
 # --------------------------------------------------------------------------
 class NoFaceDetectedError(ProblemError):
-    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    status_code = UNPROCESSABLE_CONTENT
     slug = "no-face-detected"
     title = "No Face Detected"
     default_detail = "No face was found in the image. Face the camera in good light."
 
 
 class MultipleFacesError(ProblemError):
-    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    status_code = UNPROCESSABLE_CONTENT
     slug = "multiple-faces"
     title = "Multiple Faces Detected"
     default_detail = "More than one face is visible. Make sure you are alone in frame."
@@ -162,8 +169,8 @@ class NoEnrolledFaceError(ProblemError):
 # --------------------------------------------------------------------------
 # Generic
 # --------------------------------------------------------------------------
-class ValidationProblem(ProblemError):
-    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+class ValidationProblemError(ProblemError):
+    status_code = UNPROCESSABLE_CONTENT
     slug = "validation-error"
     title = "Validation Error"
     default_detail = "The request body was not valid."
@@ -188,18 +195,27 @@ def install_exception_handlers(app: FastAPI) -> None:
     async def _problem_handler(_: Request, exc: ProblemError) -> JSONResponse:
         return exc.to_response()
 
-    @app.exception_handler(RequestValidationError)
-    async def _validation_handler(
-        _: Request, exc: RequestValidationError
-    ) -> JSONResponse:
+    def _field_errors(exc: RequestValidationError | ValidationError) -> list[Any]:
         # Field-level errors are safe to expose: they describe the caller's own
         # request, not server state.
-        return ValidationProblem(
-            errors=[
-                {"field": ".".join(str(p) for p in e["loc"]), "message": e["msg"]}
-                for e in exc.errors()
-            ]
-        ).to_response()
+        return [
+            {"field": ".".join(str(p) for p in e["loc"]), "message": e["msg"]} for e in exc.errors()
+        ]
+
+    @app.exception_handler(RequestValidationError)
+    async def _validation_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
+        return ValidationProblemError(errors=_field_errors(exc)).to_response()
+
+    @app.exception_handler(ValidationError)
+    async def _pydantic_handler(_: Request, exc: ValidationError) -> JSONResponse:
+        """Handle models validated by hand rather than by a route signature.
+
+        Multipart endpoints take their scalar fields as `Form(...)` and build
+        the request model explicitly, which raises pydantic's own
+        ValidationError rather than FastAPI's wrapper. Without this the error
+        would escape as a 500 and tell the caller nothing.
+        """
+        return ValidationProblemError(errors=_field_errors(exc)).to_response()
 
     @app.exception_handler(Exception)
     async def _unhandled_handler(request: Request, exc: Exception) -> JSONResponse:

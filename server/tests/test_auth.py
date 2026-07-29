@@ -30,13 +30,12 @@ from .conftest import (
 async def test_register_returns_tokens(client: AsyncClient, credentials):
     body = await register_user(client, credentials)
     assert body["token_type"] == "Bearer"
-    assert body["access_token"] and body["refresh_token"]
+    assert body["access_token"]
+    assert body["refresh_token"]
     assert body["user_id"]
 
 
-async def test_register_stores_hash_not_password(
-    client: AsyncClient, credentials, database
-):
+async def test_register_stores_hash_not_password(client: AsyncClient, credentials, database):
     """The 2022 server stored passwords reversibly. Nothing recoverable now."""
     await register_user(client, credentials)
     user = await database.db[USERS].find_one({"email": credentials["email"]})
@@ -59,9 +58,7 @@ async def test_register_encrypts_embeddings(client: AsyncClient, credentials, da
 async def test_duplicate_email_is_rejected(client: AsyncClient, credentials):
     """The old code caught DuplicateKeyError for an index it never created."""
     await register_user(client, credentials)
-    response = await client.post(
-        "/api/v1/auth/register", data=credentials, files=enrolment_files()
-    )
+    response = await client.post("/api/v1/auth/register", data=credentials, files=enrolment_files())
     assert response.status_code == 409
     assert problem_slug(response) == "email-already-registered"
 
@@ -69,9 +66,7 @@ async def test_duplicate_email_is_rejected(client: AsyncClient, credentials):
 async def test_email_case_is_normalised(client: AsyncClient, credentials):
     await register_user(client, credentials)
     shouting = dict(credentials, email=credentials["email"].upper())
-    response = await client.post(
-        "/api/v1/auth/register", data=shouting, files=enrolment_files()
-    )
+    response = await client.post("/api/v1/auth/register", data=shouting, files=enrolment_files())
     assert response.status_code == 409
 
 
@@ -94,9 +89,7 @@ async def test_register_requires_exactly_three_frames(client: AsyncClient, crede
     assert problem_slug(response) == "face-mismatch"
 
 
-async def test_mismatched_enrolment_frames_are_rejected(
-    client: AsyncClient, credentials
-):
+async def test_mismatched_enrolment_frames_are_rejected(client: AsyncClient, credentials):
     """Three photos of three different people must not enrol as one account."""
     response = await client.post(
         "/api/v1/auth/register",
@@ -111,16 +104,13 @@ async def test_mismatched_enrolment_frames_are_rejected(
     assert problem_slug(response) == "face-mismatch"
 
 
-async def test_failed_enrolment_creates_no_account(
-    client: AsyncClient, credentials, database
-):
+async def test_failed_enrolment_creates_no_account(client: AsyncClient, credentials, database):
     """The old flow inserted the user first, stranding faceless accounts."""
     await client.post(
         "/api/v1/auth/register",
         data=credentials,
         files=[
-            ("frames", (f"f{i}.jpg", frame("alice") + b";NOFACE", "image/jpeg"))
-            for i in range(3)
+            ("frames", (f"f{i}.jpg", frame("alice") + b";NOFACE", "image/jpeg")) for i in range(3)
         ],
     )
     assert await database.db[USERS].count_documents({"email": credentials["email"]}) == 0
@@ -145,9 +135,7 @@ async def test_wrong_password_is_rejected(client: AsyncClient, credentials):
     assert problem_slug(response) == "invalid-credentials"
 
 
-async def test_unknown_and_known_accounts_are_indistinguishable(
-    client: AsyncClient, credentials
-):
+async def test_unknown_and_known_accounts_are_indistinguishable(client: AsyncClient, credentials):
     """No account-existence oracle: identical status, slug and detail text."""
     await register_user(client, credentials)
 
@@ -179,9 +167,7 @@ async def test_lockout_after_repeated_failures(client: AsyncClient, credentials)
     assert (await client.post("/api/v1/auth/login", json=credentials)).status_code == 429
 
 
-async def test_successful_login_clears_the_failure_counter(
-    client: AsyncClient, credentials
-):
+async def test_successful_login_clears_the_failure_counter(client: AsyncClient, credentials):
     await register_user(client, credentials)
     wrong = dict(credentials, password="wrong-but-long-enough")
 
@@ -196,9 +182,7 @@ async def test_successful_login_clears_the_failure_counter(
 
 
 async def test_unknown_fields_are_rejected(client: AsyncClient, credentials):
-    response = await client.post(
-        "/api/v1/auth/login", json=dict(credentials, is_admin=True)
-    )
+    response = await client.post("/api/v1/auth/login", json=dict(credentials, is_admin=True))
     assert response.status_code == 422
 
 
@@ -214,16 +198,12 @@ async def test_refresh_rotates_the_token(client: AsyncClient, credentials):
     assert response.json()["refresh_token"] != tokens["refresh_token"]
 
 
-async def test_refresh_token_reuse_revokes_the_family(
-    client: AsyncClient, credentials, database
-):
+async def test_refresh_token_reuse_revokes_the_family(client: AsyncClient, credentials, database):
     """Presenting a spent token means it was captured: kill the whole chain."""
     tokens = await register_user(client, credentials)
     first = tokens["refresh_token"]
 
-    rotated = (
-        await client.post("/api/v1/auth/refresh", json={"refresh_token": first})
-    ).json()
+    rotated = (await client.post("/api/v1/auth/refresh", json={"refresh_token": first})).json()
 
     replay = await client.post("/api/v1/auth/refresh", json={"refresh_token": first})
     assert replay.status_code == 401
@@ -238,15 +218,11 @@ async def test_refresh_token_reuse_revokes_the_family(
 
 
 async def test_unknown_refresh_token_is_rejected(client: AsyncClient):
-    response = await client.post(
-        "/api/v1/auth/refresh", json={"refresh_token": "x" * 43}
-    )
+    response = await client.post("/api/v1/auth/refresh", json={"refresh_token": "x" * 43})
     assert response.status_code == 401
 
 
-async def test_expired_refresh_token_is_rejected(
-    client: AsyncClient, credentials, database
-):
+async def test_expired_refresh_token_is_rejected(client: AsyncClient, credentials, database):
     tokens = await register_user(client, credentials)
     await database.db[REFRESH_TOKENS].update_one(
         {"token_hash": hash_refresh_token(tokens["refresh_token"])},
@@ -259,9 +235,7 @@ async def test_expired_refresh_token_is_rejected(
     assert problem_slug(response) == "token-expired"
 
 
-async def test_refresh_tokens_are_stored_hashed(
-    client: AsyncClient, credentials, database
-):
+async def test_refresh_tokens_are_stored_hashed(client: AsyncClient, credentials, database):
     tokens = await register_user(client, credentials)
     record = await database.db[REFRESH_TOKENS].find_one({})
     assert record["token_hash"] != tokens["refresh_token"]
@@ -281,9 +255,7 @@ async def test_logout_revokes_the_family(client: AsyncClient, credentials, datab
 
 
 async def test_logout_with_unknown_token_is_a_noop(client: AsyncClient):
-    response = await client.post(
-        "/api/v1/auth/logout", json={"refresh_token": "y" * 43}
-    )
+    response = await client.post("/api/v1/auth/logout", json={"refresh_token": "y" * 43})
     assert response.status_code == 204
 
 

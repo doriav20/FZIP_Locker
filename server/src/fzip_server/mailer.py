@@ -102,8 +102,9 @@ async def send_welcome_email(settings: Settings, recipient: str) -> bool:
             timeout=10,
         )
     except (aiosmtplib.SMTPException, OSError) as exc:
-        log.warning("welcome_email_failed", error=str(exc), recipient_domain=
-                    recipient.rsplit("@", 1)[-1])
+        log.warning(
+            "welcome_email_failed", error=str(exc), recipient_domain=recipient.rsplit("@", 1)[-1]
+        )
         return False
 
     log.info("welcome_email_sent", recipient_domain=recipient.rsplit("@", 1)[-1])

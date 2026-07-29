@@ -62,9 +62,7 @@ class SignInScreen(QWidget):
 
         footer = QHBoxLayout()
         footer.addStretch(1)
-        footer.addWidget(
-            link_button("Create an account", lambda: controller.navigate("sign_up"))
-        )
+        footer.addWidget(link_button("Create an account", lambda: controller.navigate("sign_up")))
         footer.addStretch(1)
         card.body.addLayout(footer)
 
@@ -113,8 +111,6 @@ class SignInScreen(QWidget):
     def _on_error(self, message: str, exc: Exception) -> None:
         self._set_busy(False)
         if isinstance(exc, ApiError) and exc.type_slug == "account-locked":
-            self._status.error(
-                "Too many failed attempts. Wait a few minutes before trying again."
-            )
+            self._status.error("Too many failed attempts. Wait a few minutes before trying again.")
             return
         self._status.error(message)

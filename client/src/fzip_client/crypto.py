@@ -215,9 +215,7 @@ def decrypt_chunks(
         try:
             yield aesgcm.decrypt(_nonce(nonce_base, index), chunk, aad)
         except InvalidTag as exc:
-            raise DecryptionError(
-                f"authentication failed on chunk {index}"
-            ) from exc
+            raise DecryptionError(f"authentication failed on chunk {index}") from exc
 
 
 def generate_nonce_base() -> bytes:

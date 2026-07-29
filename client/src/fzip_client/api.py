@@ -13,6 +13,7 @@ password or file contents anywhere.
 
 from __future__ import annotations
 
+import contextlib
 from pathlib import Path
 from typing import Any
 
@@ -109,9 +110,7 @@ class FzipApi:
             and self._session.refresh_token
         ):
             self.refresh()
-            return self._request(
-                method, path, authenticated=True, retry_on_expiry=False, **kwargs
-            )
+            return self._request(method, path, authenticated=True, retry_on_expiry=False, **kwargs)
 
         if error.type_slug in {"token-reused", "authentication-required"}:
             self._session.clear()
@@ -122,8 +121,7 @@ class FzipApi:
     @staticmethod
     def _frame_files(frames: Frames) -> list[tuple[str, tuple[str, bytes, str]]]:
         return [
-            ("frames", (f"frame-{i:02d}.jpg", data, "image/jpeg"))
-            for i, data in enumerate(frames)
+            ("frames", (f"frame-{i:02d}.jpg", data, "image/jpeg")) for i, data in enumerate(frames)
         ]
 
     # -- auth -------------------------------------------------------------
@@ -168,17 +166,13 @@ class FzipApi:
     def logout(self) -> None:
         token = self._session.refresh_token
         if token:
-            try:
+            # Local sign-out must succeed even if the server is unreachable.
+            with contextlib.suppress(ApiError, NetworkError, AuthRequiredError):
                 self._request("POST", "/api/v1/auth/logout", json={"refresh_token": token})
-            except (ApiError, NetworkError, AuthRequiredError):
-                # Local sign-out must succeed even if the server is gone.
-                pass
         self._session.clear()
 
     def me(self) -> dict[str, Any]:
-        body: dict[str, Any] = self._request(
-            "GET", "/api/v1/auth/me", authenticated=True
-        ).json()
+        body: dict[str, Any] = self._request("GET", "/api/v1/auth/me", authenticated=True).json()
         return body
 
     # -- face -------------------------------------------------------------

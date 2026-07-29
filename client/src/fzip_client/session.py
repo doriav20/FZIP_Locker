@@ -8,6 +8,7 @@ token goes to the OS credential store rather than a variable or a file.
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass, field
 
 import keyring
@@ -61,18 +62,14 @@ class Session:
     def _persist_refresh_token(self) -> None:
         if not self.email:
             return
-        try:
+        with contextlib.suppress(KeyringError):
             keyring.set_password(SERVICE_NAME, self.email, self._refresh_token)
-        except KeyringError:
-            pass
 
     def _forget_refresh_token(self) -> None:
         if not self.email:
             return
-        try:
+        with contextlib.suppress(KeyringError):
             keyring.delete_password(SERVICE_NAME, self.email)
-        except KeyringError:
-            pass
 
     @staticmethod
     def stored_refresh_token(email: str) -> str:

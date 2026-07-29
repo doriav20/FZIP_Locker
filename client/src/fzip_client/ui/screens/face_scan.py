@@ -20,7 +20,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from ...camera import CameraThread, encode_jpeg, to_qimage
+from ...camera import CameraThread, encode_jpeg
 from ..widgets import (
     CameraView,
     Heading,
@@ -131,8 +131,7 @@ class EnrolmentCaptureDialog(_CameraDialog):
     def _update_progress(self) -> None:
         remaining = ENROLMENT_CAPTURES - len(self.frames)
         self._progress.setText(
-            f"{len(self.frames)} of {ENROLMENT_CAPTURES} captured - "
-            f"{remaining} remaining"
+            f"{len(self.frames)} of {ENROLMENT_CAPTURES} captured - {remaining} remaining"
         )
 
     def _on_capture(self) -> None:

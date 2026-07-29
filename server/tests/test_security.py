@@ -78,7 +78,7 @@ def test_weaker_stored_parameters_trigger_a_rehash(settings: Settings):
 
 
 def test_unicode_passwords_round_trip(hasher):
-    secret = "пароль-с-юникодом-🔒"
+    secret = "пароль-с-юникодом-🔒"  # noqa: RUF001 - non-ASCII is the point
     assert verify_password(hasher, hash_password(hasher, secret), secret)[0]
 
 
@@ -128,8 +128,14 @@ def test_tampered_token_is_rejected(settings: Settings):
 def test_unsigned_token_is_rejected(settings: Settings):
     """The classic `alg: none` downgrade. Pinning algorithms blocks it."""
     forged = jwt.encode(
-        {"sub": "user-1", "typ": "access", "iss": ISSUER, "aud": AUDIENCE,
-         "iat": int(time.time()), "exp": int(time.time()) + 60},
+        {
+            "sub": "user-1",
+            "typ": "access",
+            "iss": ISSUER,
+            "aud": AUDIENCE,
+            "iat": int(time.time()),
+            "exp": int(time.time()) + 60,
+        },
         key="",
         algorithm="none",
     )
@@ -148,9 +154,7 @@ def test_token_signed_by_another_key_is_rejected(settings: Settings):
     attacker_pem = Ed25519PrivateKey.generate().private_bytes(
         Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
     )
-    other = settings.model_copy(
-        update={"jwt_private_key": base64.b64encode(attacker_pem).decode()}
-    )
+    other = settings.model_copy(update={"jwt_private_key": base64.b64encode(attacker_pem).decode()})
     forged = create_token(other, "user-1", "access", 60)
 
     with pytest.raises(AuthenticationRequiredError):
@@ -223,6 +227,6 @@ def test_non_base64_biometric_key_is_refused(monkeypatch):
 def test_argon2_memory_below_owasp_floor_is_refused(monkeypatch):
     get_settings.cache_clear()
     monkeypatch.setenv("FZIP_ARGON2_MEMORY_KIB", "4096")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="greater than or equal to"):
         Settings()  # type: ignore[call-arg]
     get_settings.cache_clear()

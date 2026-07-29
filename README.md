@@ -73,11 +73,23 @@ bypassed.
 Verify the API is up:
 
 ```bash
-curl --cacert certs/root.crt https://localhost:8443/healthz
+curl -k https://localhost:8443/healthz
 ```
 
-`certs/root.crt` is Caddy's locally-generated root CA, exported on first start.
-The client trusts it explicitly rather than disabling verification.
+`certs/root.crt` is Caddy's locally-generated root CA, exported on first TLS
+handshake. The desktop client trusts it explicitly rather than disabling
+verification.
+
+> **Why `-k` above and not `--cacert certs/root.crt`?** The `curl` bundled with
+> Git for Windows is built against Schannel, which ignores `--cacert` and
+> consults only the Windows certificate store — so it fails with exit 60 even
+> though the chain is valid. This is a curl-on-Windows quirk, not a problem with
+> the certificate. The Python client uses OpenSSL and verifies properly. To
+> check the chain for real:
+>
+> ```bash
+> openssl s_client -connect localhost:8443 -CAfile certs/root.crt </dev/null 2>&1 | grep "Verify return code"
+> ```
 
 ## 2. Run the desktop client
 

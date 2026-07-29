@@ -9,7 +9,6 @@ needs told.
 
 from __future__ import annotations
 
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
     QDialog,
@@ -65,9 +64,7 @@ class PasswordDialog(QDialog):
             )
         )
 
-        self._password = PasswordField(
-            "Archive password", show_strength=include_generator
-        )
+        self._password = PasswordField("Archive password", show_strength=include_generator)
         self._password.returnPressed.connect(self._submit)
         outer.addWidget(labelled("Password", self._password))
 

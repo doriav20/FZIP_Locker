@@ -60,7 +60,7 @@ class LogoutRequest(RefreshRequest):
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
-    token_type: Literal["Bearer"] = "Bearer"
+    token_type: Literal["Bearer"] = "Bearer"  # noqa: S105 - scheme name, not a secret
     expires_in: int
     user_id: str
 

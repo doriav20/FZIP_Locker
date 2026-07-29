@@ -52,9 +52,7 @@ def seal_embedding(key: bytes, user_id: str, vector: np.ndarray) -> SealedEmbedd
 
     flat = np.ascontiguousarray(vector, dtype=EMBEDDING_DTYPE)
     nonce = secrets.token_bytes(NONCE_SIZE)
-    ciphertext = AESGCM(key).encrypt(
-        nonce, flat.tobytes(), _aad(user_id, CURRENT_KEY_VERSION)
-    )
+    ciphertext = AESGCM(key).encrypt(nonce, flat.tobytes(), _aad(user_id, CURRENT_KEY_VERSION))
 
     return SealedEmbedding(
         ciphertext=base64.b64encode(ciphertext).decode("ascii"),

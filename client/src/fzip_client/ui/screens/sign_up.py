@@ -52,9 +52,7 @@ class SignUpScreen(QWidget):
         self._email.setPlaceholderText("you@example.com")
         card.body.addWidget(labelled("Email", self._email))
 
-        self._password = PasswordField(
-            f"At least {MIN_LENGTH} characters", show_strength=True
-        )
+        self._password = PasswordField(f"At least {MIN_LENGTH} characters", show_strength=True)
         card.body.addWidget(labelled("Account password", self._password))
 
         self._repeat = PasswordField("Repeat your password")
@@ -73,9 +71,7 @@ class SignUpScreen(QWidget):
 
         footer = QHBoxLayout()
         footer.addStretch(1)
-        footer.addWidget(
-            link_button("Back to sign in", lambda: controller.navigate("sign_in"))
-        )
+        footer.addWidget(link_button("Back to sign in", lambda: controller.navigate("sign_in")))
         footer.addStretch(1)
         card.body.addLayout(footer)
 

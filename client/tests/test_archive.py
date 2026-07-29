@@ -110,7 +110,7 @@ def test_symlink_entry_is_refused(tmp_path):
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as zf:
         info = zipfile.ZipInfo("link")
-        info.external_attr = (0o120777 << 16)  # S_IFLNK | 0777
+        info.external_attr = 0o120777 << 16  # S_IFLNK | 0777
         zf.writestr(info, "/etc/passwd")
     buf.seek(0)
 

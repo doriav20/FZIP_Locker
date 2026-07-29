@@ -58,9 +58,7 @@ ENROLMENT_CONSISTENCY_THRESHOLD = 0.30
 async def _issue_tokens(
     db: Any, settings: Any, user_id: str, family_id: str | None = None
 ) -> TokenResponse:
-    access = create_token(
-        settings, user_id, "access", settings.access_token_ttl_seconds
-    )
+    access = create_token(settings, user_id, "access", settings.access_token_ttl_seconds)
     refresh = generate_refresh_token()
     now = datetime.now(UTC)
 
@@ -84,9 +82,7 @@ async def _issue_tokens(
     )
 
 
-@router.post(
-    "/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED
-)
+@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(
     db: Db,
     settings: AppSettings,
@@ -114,9 +110,7 @@ async def register(
     for index in range(1, len(embeddings)):
         score = engine.similarity(embeddings[0], embeddings[index])
         if score < ENROLMENT_CONSISTENCY_THRESHOLD:
-            raise FaceMismatchError(
-                "The enrolment images do not all show the same person."
-            )
+            raise FaceMismatchError("The enrolment images do not all show the same person.")
 
     user_id = str(uuid.uuid4())
     try:
@@ -174,9 +168,7 @@ async def login(
 
     if upgraded:
         # Argon2 parameters were raised since this password was last set.
-        await db[USERS].update_one(
-            {"_id": user["_id"]}, {"$set": {"password_hash": upgraded}}
-        )
+        await db[USERS].update_one({"_id": user["_id"]}, {"$set": {"password_hash": upgraded}})
         log.info("password_hash_upgraded", user_id=user["_id"])
 
     await clear_failures(db, ip_key)

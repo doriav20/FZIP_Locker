@@ -95,8 +95,16 @@ def test_valid_emails_accepted(address):
 
 @pytest.mark.parametrize(
     "address",
-    ["", "no-at-sign", "@example.com", "user@", "user@host", "a b@example.com",
-     "user@@example.com", "x" * 250 + "@example.com"],
+    [
+        "",
+        "no-at-sign",
+        "@example.com",
+        "user@",
+        "user@host",
+        "a b@example.com",
+        "user@@example.com",
+        "x" * 250 + "@example.com",
+    ],
 )
 def test_invalid_emails_rejected(address):
     assert not passwords.is_valid_email(address)

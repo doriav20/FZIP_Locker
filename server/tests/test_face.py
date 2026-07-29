@@ -58,9 +58,7 @@ async def test_verification_succeeds_with_a_live_turn(client: AsyncClient, crede
         "/api/v1/face/verify",
         headers=auth_header(tokens),
         data={"nonce": challenge["nonce"]},
-        files=verification_files(
-            "alice", challenge["direction"], challenge["frames_required"]
-        ),
+        files=verification_files("alice", challenge["direction"], challenge["frames_required"]),
     )
     assert response.status_code == 200, response.text
     body = response.json()
@@ -74,19 +72,13 @@ async def test_nonce_cannot_be_replayed(client: AsyncClient, credentials):
     challenge = await get_challenge(client, tokens)
     payload = {
         "data": {"nonce": challenge["nonce"]},
-        "files": verification_files(
-            "alice", challenge["direction"], challenge["frames_required"]
-        ),
+        "files": verification_files("alice", challenge["direction"], challenge["frames_required"]),
     }
 
-    first = await client.post(
-        "/api/v1/face/verify", headers=auth_header(tokens), **payload
-    )
+    first = await client.post("/api/v1/face/verify", headers=auth_header(tokens), **payload)
     assert first.status_code == 200
 
-    replay = await client.post(
-        "/api/v1/face/verify", headers=auth_header(tokens), **payload
-    )
+    replay = await client.post("/api/v1/face/verify", headers=auth_header(tokens), **payload)
     assert replay.status_code == 400
     assert problem_slug(replay) == "challenge-invalid"
 
@@ -103,9 +95,7 @@ async def test_unknown_nonce_is_rejected(client: AsyncClient, credentials):
     assert problem_slug(response) == "challenge-invalid"
 
 
-async def test_expired_challenge_is_rejected(
-    client: AsyncClient, credentials, database
-):
+async def test_expired_challenge_is_rejected(client: AsyncClient, credentials, database):
     tokens = await register_user(client, credentials)
     challenge = await get_challenge(client, tokens)
 
@@ -201,9 +191,7 @@ async def test_wrong_face_is_rejected(client: AsyncClient, credentials):
         "/api/v1/face/verify",
         headers=auth_header(tokens),
         data={"nonce": challenge["nonce"]},
-        files=verification_files(
-            "mallory", challenge["direction"], challenge["frames_required"]
-        ),
+        files=verification_files("mallory", challenge["direction"], challenge["frames_required"]),
     )
     assert response.status_code == 401
     assert problem_slug(response) == "face-mismatch"
@@ -232,10 +220,7 @@ async def test_too_many_frames_is_rejected(client: AsyncClient, credentials):
         "/api/v1/face/verify",
         headers=auth_header(tokens),
         data={"nonce": challenge["nonce"]},
-        files=[
-            ("frames", (f"v{i}.jpg", frame("alice", 0.0), "image/jpeg"))
-            for i in range(50)
-        ],
+        files=[("frames", (f"v{i}.jpg", frame("alice", 0.0), "image/jpeg")) for i in range(50)],
     )
     assert response.status_code == 401
 
@@ -257,9 +242,7 @@ async def test_undetectable_frame_is_reported_clearly(client: AsyncClient, crede
     assert problem_slug(response) == "no-face-detected"
 
 
-async def test_repeated_failures_lock_face_verification(
-    client: AsyncClient, credentials
-):
+async def test_repeated_failures_lock_face_verification(client: AsyncClient, credentials):
     tokens = await register_user(client, credentials)
 
     statuses = []

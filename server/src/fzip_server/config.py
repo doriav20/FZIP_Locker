@@ -86,9 +86,7 @@ class Settings(BaseSettings):
                 "Generate one with: python -m scripts.gen_secrets"
             ) from exc
         if len(raw) != 32:
-            raise ValueError(
-                f"FZIP_BIOMETRIC_KEY must decode to exactly 32 bytes, got {len(raw)}"
-            )
+            raise ValueError(f"FZIP_BIOMETRIC_KEY must decode to exactly 32 bytes, got {len(raw)}")
         return value
 
     @field_validator("jwt_private_key")
@@ -127,4 +125,6 @@ class Settings(BaseSettings):
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    return Settings()  # type: ignore[call-arg]
+    # Field values come from the environment; the pydantic mypy plugin knows
+    # this constructor takes no arguments.
+    return Settings()

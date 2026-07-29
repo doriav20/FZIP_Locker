@@ -48,9 +48,7 @@ def test_degenerate_landmarks_do_not_divide_by_zero():
     from fzip_server.biometrics import DetectedFace
 
     row = np.zeros(15, dtype=np.float32)
-    face = DetectedFace(
-        box=(0, 0, 10, 10), landmarks=row[4:14].reshape(5, 2), score=0.5, raw=row
-    )
+    face = DetectedFace(box=(0, 0, 10, 10), landmarks=row[4:14].reshape(5, 2), score=0.5, raw=row)
     assert face.yaw_ratio == 0.0
 
 

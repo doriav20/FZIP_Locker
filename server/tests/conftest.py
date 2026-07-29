@@ -46,9 +46,7 @@ def _ed25519_key_b64() -> str:
 
 
 os.environ.setdefault("FZIP_MONGO_URI", "mongodb://mongo:27017")
-os.environ.setdefault(
-    "FZIP_BIOMETRIC_KEY", base64.b64encode(secrets.token_bytes(32)).decode()
-)
+os.environ.setdefault("FZIP_BIOMETRIC_KEY", base64.b64encode(secrets.token_bytes(32)).decode())
 os.environ.setdefault("FZIP_JWT_PRIVATE_KEY", _ed25519_key_b64())
 # Argon2 at the OWASP floor: enough to exercise the real code path without the
 # suite being dominated by key stretching.
@@ -147,9 +145,7 @@ class FakeFaceEngine:
         denom = float(np.linalg.norm(a) * np.linalg.norm(b))
         return 0.0 if denom < 1e-9 else float(np.dot(a, b) / denom)
 
-    def best_match(
-        self, probe: np.ndarray, enrolled: list[np.ndarray]
-    ) -> tuple[bool, float]:
+    def best_match(self, probe: np.ndarray, enrolled: list[np.ndarray]) -> tuple[bool, float]:
         if not enrolled:
             return False, 0.0
         best = max(self.similarity(probe, c) for c in enrolled)
@@ -162,16 +158,14 @@ class FakeFaceEngine:
 @pytest.fixture
 def settings() -> Settings:
     """Real settings, pointed at a database name unique to this test."""
-    return get_settings().model_copy(
-        update={"mongo_db": f"fzip_test_{uuid.uuid4().hex[:12]}"}
-    )
+    return get_settings().model_copy(update={"mongo_db": f"fzip_test_{uuid.uuid4().hex[:12]}"})
 
 
 @pytest.fixture
 async def database(settings: Settings) -> AsyncIterator[Database]:
     db = Database(settings)
     try:
-        await db._client.admin.command("ping")  # noqa: SLF001
+        await db._client.admin.command("ping")
     except PyMongoError as exc:  # pragma: no cover - environment problem
         await db.close()
         pytest.fail(
@@ -183,7 +177,7 @@ async def database(settings: Settings) -> AsyncIterator[Database]:
     try:
         yield db
     finally:
-        await db._client.drop_database(settings.mongo_db)  # noqa: SLF001
+        await db._client.drop_database(settings.mongo_db)
         await db.close()
 
 
@@ -211,9 +205,7 @@ async def client(
     app.dependency_overrides[get_hasher] = lambda: hasher
     app.dependency_overrides[get_app_settings] = lambda: settings
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="https://testserver"
-    ) as http:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="https://testserver") as http:
         yield http
 
 
@@ -229,9 +221,7 @@ def credentials() -> dict[str, str]:
 # Helpers
 # ---------------------------------------------------------------------------
 def enrolment_files(identity: str = "alice") -> list[tuple[str, tuple[str, bytes, str]]]:
-    return [
-        ("frames", (f"f{i}.jpg", frame(identity, 0.0), "image/jpeg")) for i in range(3)
-    ]
+    return [("frames", (f"f{i}.jpg", frame(identity, 0.0), "image/jpeg")) for i in range(3)]
 
 
 def verification_files(
@@ -242,8 +232,7 @@ def verification_files(
     yaws = [0.0, 0.0, turn * 0.5, turn, turn]
     yaws = (yaws * ((count // 5) + 1))[:count]
     return [
-        ("frames", (f"v{i}.jpg", frame(identity, yaw), "image/jpeg"))
-        for i, yaw in enumerate(yaws)
+        ("frames", (f"v{i}.jpg", frame(identity, yaw), "image/jpeg")) for i, yaw in enumerate(yaws)
     ]
 
 

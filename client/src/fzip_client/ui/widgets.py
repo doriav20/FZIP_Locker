@@ -115,9 +115,7 @@ class PasswordField(QWidget):
         self.edit.clear()
 
     def _on_toggled(self, shown: bool) -> None:
-        self.edit.setEchoMode(
-            QLineEdit.EchoMode.Normal if shown else QLineEdit.EchoMode.Password
-        )
+        self.edit.setEchoMode(QLineEdit.EchoMode.Normal if shown else QLineEdit.EchoMode.Password)
         self._toggle.setText("Hide" if shown else "Show")
 
     def _on_text_changed(self, value: str) -> None:

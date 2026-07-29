@@ -108,7 +108,7 @@ def test_declared_dimension_must_match(key, vector):
     ],
 )
 def test_malformed_records_are_rejected(key, record):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=r"malformed embedding record|authentication"):
         open_embedding(key, "user-1", record)
 
 

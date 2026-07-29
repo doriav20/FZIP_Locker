@@ -35,9 +35,7 @@ def to_qimage(frame: np.ndarray) -> QImage:
     and the numpy array it points at is reused for the next frame.
     """
     height, width, _ = frame.shape
-    return QImage(
-        frame.data, width, height, width * 3, QImage.Format.Format_BGR888
-    ).copy()
+    return QImage(frame.data, width, height, width * 3, QImage.Format.Format_BGR888).copy()
 
 
 def open_capture(index: int = 0) -> cv2.VideoCapture:

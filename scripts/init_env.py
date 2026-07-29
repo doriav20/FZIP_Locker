@@ -44,11 +44,28 @@ GENERATORS = {
 }
 
 
+def read_text_any_encoding(path: Path) -> str:
+    """Read a text file that may not be UTF-8.
+
+    PowerShell 5.1's `>` and `Out-File` default to UTF-16LE, so a file created
+    with `python gen_secrets.py > .env` on Windows arrives UTF-16 with a BOM.
+    Docker Compose cannot read that either, which makes detecting it here
+    doubly worthwhile - the rewritten file is always UTF-8.
+    """
+    raw = path.read_bytes()
+    for encoding in ("utf-8-sig", "utf-16", "utf-8", "latin-1"):
+        try:
+            return raw.decode(encoding)
+        except (UnicodeDecodeError, UnicodeError):
+            continue
+    raise SystemExit(f"error: cannot decode {path}; rewrite it as UTF-8")
+
+
 def parse(path: Path) -> dict[str, str]:
     if not path.is_file():
         return {}
     values: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in read_text_any_encoding(path).splitlines():
         stripped = line.strip()
         if not stripped or stripped.startswith("#") or "=" not in stripped:
             continue
@@ -80,7 +97,7 @@ def main() -> int:
             created.append(key)
 
     out: list[str] = []
-    for line in example.read_text(encoding="utf-8").splitlines():
+    for line in read_text_any_encoding(example).splitlines():
         stripped = line.strip()
         if "=" in stripped and not stripped.startswith("#"):
             key = stripped.partition("=")[0].strip()
@@ -98,9 +115,7 @@ def main() -> int:
         print("  generated new:  ", ", ".join(sorted(created)))
 
     leftover = [
-        ln.partition("=")[0]
-        for ln in out
-        if "CHANGE_ME" in ln and not ln.strip().startswith("#")
+        ln.partition("=")[0] for ln in out if "CHANGE_ME" in ln and not ln.strip().startswith("#")
     ]
     if leftover:
         print("  STILL PLACEHOLDER:", ", ".join(leftover))

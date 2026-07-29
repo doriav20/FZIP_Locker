@@ -114,8 +114,11 @@ class VaultScreen(QWidget):
 
     def _logout(self) -> None:
         api = self._controller.api
-        run_async(api.logout, lambda _: self._controller.navigate("sign_in"),
-                  lambda *_: self._controller.navigate("sign_in"))
+        run_async(
+            api.logout,
+            lambda _: self._controller.navigate("sign_in"),
+            lambda *_: self._controller.navigate("sign_in"),
+        )
 
     # ------------------------------------------------------------------
     # Lock
@@ -244,9 +247,7 @@ class VaultScreen(QWidget):
 
     def _on_unlocked(self, result: operations.UnlockResult) -> None:
         self._set_busy(False)
-        self._status.success(
-            f"Extracted {result.file_count} file(s) to {result.destination.name}."
-        )
+        self._status.success(f"Extracted {result.file_count} file(s) to {result.destination.name}.")
 
     # ------------------------------------------------------------------
     def _on_face_failed(self, message: str, exc: Exception) -> None:

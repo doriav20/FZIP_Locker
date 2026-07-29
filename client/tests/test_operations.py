@@ -9,7 +9,13 @@ from __future__ import annotations
 import pytest
 
 from fzip_client import crypto, operations, vault
-from fzip_client.errors import DecryptionError, NotAVaultError, OwnershipError
+from fzip_client.errors import (
+    ArchiveError,
+    DecryptionError,
+    NotAVaultError,
+    OwnershipError,
+    VaultError,
+)
 
 CHEAP = {"time_cost": 1, "memory_kib": 8192, "parallelism": 1}
 PASSWORD = "a-sufficiently-long-archive-password"
@@ -149,7 +155,7 @@ def test_peek_reads_metadata_without_the_password(tmp_path):
 def test_failed_lock_leaves_no_partial_file(tmp_path):
     """An interrupted lock must not leave something that looks like a vault."""
     locked = tmp_path / "out.lck"
-    with pytest.raises(Exception):
+    with pytest.raises(ArchiveError, match="not found"):
         operations.lock([tmp_path / "does-not-exist"], locked, PASSWORD)
 
     assert not locked.exists()
@@ -184,18 +190,39 @@ def test_unlock_picks_a_free_output_directory(tmp_path):
 def test_empty_password_is_refused(tmp_path):
     source = tmp_path / "a.txt"
     source.write_bytes(b"x")
-    with pytest.raises(Exception, match="password"):
+    with pytest.raises(VaultError, match="password"):
         operations.lock([source], tmp_path / "out.lck", "")
 
 
 def test_multi_chunk_archive_round_trips(tmp_path):
-    """Crosses the chunk boundary so the streaming path is really exercised."""
+    """Crosses the chunk boundary so the streaming path is really exercised.
+
+    The payload must be incompressible: it is the *deflated* ZIP that gets
+    chunked, so a repeating pattern would collapse to a single chunk and this
+    test would silently stop covering the streaming path.
+    """
+    import os
+
+    payload = os.urandom(3 * 1024 * 1024)
     big = tmp_path / "big.bin"
-    big.write_bytes(bytes(range(256)) * 12_000)  # ~3 MiB
+    big.write_bytes(payload)
     locked = tmp_path / "big.lck"
 
     operations.lock([big], locked, PASSWORD)
-    assert operations.peek(locked).chunks >= 2
+
+    header = operations.peek(locked)
+    assert header.chunks >= 3, f"expected multiple chunks, got {header.chunks}"
 
     out = operations.unlock(locked, PASSWORD, destination=tmp_path / "out")
-    assert (out.destination / "big.bin").read_bytes() == big.read_bytes()
+    assert (out.destination / "big.bin").read_bytes() == payload
+
+
+def test_compressible_payload_shrinks(tmp_path):
+    """Sanity check on the deflate layer, and a companion to the test above."""
+    source = tmp_path / "repetitive.bin"
+    source.write_bytes(b"A" * (2 * 1024 * 1024))
+    locked = tmp_path / "out.lck"
+
+    result = operations.lock([source], locked, PASSWORD)
+    assert result.plaintext_bytes < 100_000  # 2 MiB of 'A' deflates hard
+    assert operations.unlock(locked, PASSWORD, destination=tmp_path / "out")

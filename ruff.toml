@@ -28,8 +28,12 @@ ignore = [
 [lint.per-file-ignores]
 # Tests may hardcode passwords and use subprocess freely.
 "**/tests/**" = ["S105", "S106", "S108", "S311"]
-# Model-fetching scripts print progress by design.
+# CLI scripts print progress by design - that is their entire output.
 "server/scripts/*" = ["T20"]
+"scripts/*" = ["T20"]
+# Qt signals must be camelCase to match the framework's own API; renaming them
+# to snake_case would break the convention every Qt reader expects.
+"client/src/fzip_client/ui/**" = ["N815"]
 
 [lint.isort]
 known-first-party = ["fzip_server", "fzip_client"]
